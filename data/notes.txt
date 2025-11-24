@@ -1,0 +1,15 @@
+LangChain is a Python framework for building applications powered by large language models (LLMs). It helps connect LLMs with external data, tools, and memory.
+
+Basic LangChain concepts:
+- LLMs: the language model that generates responses.
+- Prompts: templates or instructions given to the LLM.
+- Chains: sequences combining prompts, models, and other steps.
+- Tools: external functions like search, database queries, or calculators.
+- Vector stores: databases that store embeddings for semantic search (for example, FAISS).
+
+Example real-world use cases:
+- Question-answering over private documents.
+- Chatbots that answer using your own knowledge base.
+- Code assistants, SQL query generators, and more.
+
+In this demo, we will build a simple RAG system where questions are answered using this text file as the knowledge base.
