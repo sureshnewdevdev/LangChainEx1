@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Advanced Chains, Memory &amp; Agents – LangChain Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f7f7fb;
+        color: #222;
+    }
+    .page-header {
+        background: linear-gradient(90deg, #8e24aa, #d81b60);
+        color: #fff;
+        padding: 18px 24px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.6rem;
+    }
+    .page-header p {
+        margin: 4px 0 0 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    .layout {
+        display: flex;
+        min-height: calc(100vh - 70px);
+    }
+    .sidebar {
+        width: 280px;
+        background-color: #fff;
+        border-right: 1px solid #e0e0e0;
+        padding: 12px;
+        box-sizing: border-box;
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
+    }
+    .sidebar-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        color: #8e24aa;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .nav-link {
+        display: block;
+        margin-bottom: 6px;
+        text-decoration: none;
+        color: #fff;
+        background-color: #a0007f;
+        border-radius: 4px;
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        border: 1px solid #880e4f;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .nav-link:hover {
+        background-color: #ba2d92;
+    }
+    .nav-section-separator {
+        margin: 10px 0 4px 0;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #8e24aa;
+        padding: 4px 6px;
+        border-radius: 3px;
+        background-color: #f3e5f5;
+        border: 1px solid #e1bee7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .content {
+        flex: 1;
+        padding: 24px;
+        box-sizing: border-box;
+        max-width: 980px;
+    }
+    h2 {
+        color: #8e24aa;
+        border-bottom: 2px solid #f1e1f6;
+        padding-bottom: 4px;
+        margin-top: 28px;
+    }
+    h3 {
+        color: #d81b60;
+        margin-top: 20px;
+    }
+    p {
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+    ul, ol {
+        margin-left: 22px;
+        font-size: 0.95rem;
+    }
+    .note-box {
+        border-left: 4px solid #ffb300;
+        background-color: #fff8e1;
+        padding: 8px 12px;
+        margin: 12px 0;
+        font-size: 0.9rem;
+    }
+    .code-block {
+        background-color: #263238;
+        color: #eceff1;
+        padding: 12px 14px;
+        border-radius: 4px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.85rem;
+        overflow-x: auto;
+        margin: 10px 0 16px 0;
+        white-space: pre;
+    }
+    .diagram {
+        background-color: #fff;
+        border: 1px dashed #bdbdbd;
+        padding: 10px 12px;
+        border-radius: 4px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.85rem;
+        white-space: pre;
+        overflow-x: auto;
+        margin: 10px 0 16px 0;
+    }
+    .tag-pill {
+        display: inline-block;
+        background-color: #f3e5f5;
+        color: #6a1b9a;
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 0.75rem;
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+    .section-meta {
+        margin: 6px 0 10px 0;
+    }
+    @media (max-width: 900px) {
+        .layout {
+            flex-direction: column;
+        }
+        .sidebar {
+            width: 100%;
+            position: static;
+            border-right: none;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            overflow-x: auto;
+        }
+        .sidebar-title {
+            display: none;
+        }
+        .nav-section-separator {
+            display: none;
+        }
+        .nav-link {
+            flex: 0 0 auto;
+            margin-right: 8px;
+            margin-bottom: 0;
+        }
+        .content {
+            padding: 16px;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>Advanced Chains, Memory Management &amp; Agents</h1>
+  <p>Step-by-step notes for conditional routing, memory strategies, and agent-based LangChain applications.</p>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-title">Advanced Chains and Memory Manag...</div>
+    <a class="nav-link" href="#conditional-routing">Conditional routing</a>
+    <a class="nav-link" href="#contextual-memory">Contextual memory management</a>
+    <a class="nav-link" href="#long-term-memory">Long-term memory strategies</a>
+    <a class="nav-link" href="#memory-compression">Memory compression</a>
+
+    <div class="nav-section-separator">Agents and Ecosystem Integration</div>
+    <a class="nav-link" href="#langsmith-tracing">LangSmith advanced tracing</a>
+    <a class="nav-link" href="#advanced-agent-architectures">Advanced agent architectures</a>
+    <a class="nav-link" href="#tool-integration">Tool integration</a>
+    <a class="nav-link" href="#multi-agent-collab">Multi-agent collaboration</a>
+  </nav>
+
+  <main class="content">
+
+    <!-- CONDITIONAL ROUTING -->
+    <section id="conditional-routing">
+      <h2>1. Conditional Routing</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Advanced Chains</span>
+        <span class="tag-pill">Control Flow</span>
+      </div>
+
+      <h3>1.1 Idea</h3>
+      <p>
+        Conditional routing means: <strong>the same user input can follow different chains
+        based on rules</strong>. Instead of one fixed pipeline, you build branching logic:
+      </p>
+      <ul>
+        <li>Route "math" questions to a calculator chain.</li>
+        <li>Route "code" questions to a docs/StackOverflow RAG chain.</li>
+        <li>Route "small talk" to a general chat model.</li>
+      </ul>
+
+      <div class="diagram">
+User question
+      │
+      ▼
+[ Router ]  ── if type == "math" ──►  [ Math Chain ]
+      │
+      ├─ if type == "code" ──►  [ Code-RAG Chain ]
+      │
+      └─ else ──►  [ Default Chat Chain ]
+      </div>
+
+      <h3>1.2 Implementing a Simple Router (LCEL)</h3>
+      <p>
+        A common pattern is to use the model itself to classify the query and then
+        use <code>RunnableBranch</code> to choose the right sub-chain.
+      </p>
+
+      <div class="code-block">
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableBranch, RunnableLambda
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+# 1) Router prompt: decide type of question
+router_prompt = ChatPromptTemplate.from_template(
+    "Classify the user query as 'math', 'code', or 'chat'.\n"
+    "Query: {question}\n"
+    "Answer with only one word."
+)
+
+router_chain = router_prompt | llm | StrOutputParser()
+
+# 2) Define 3 separate chains (here kept simple)
+math_prompt = ChatPromptTemplate.from_template(
+    "You are a Python calculator. Solve: {question}"
+)
+math_chain = math_prompt | llm | StrOutputParser()
+
+code_prompt = ChatPromptTemplate.from_template(
+    "You are a coding tutor. Answer this coding question in detail: {question}"
+)
+code_chain = code_prompt | llm | StrOutputParser()
+
+chat_prompt = ChatPromptTemplate.from_template(
+    "You are a friendly assistant. Respond briefly to: {question}"
+)
+chat_chain = chat_prompt | llm | StrOutputParser()
+
+# 3) Build the router using RunnableLambda + RunnableBranch
+def route(info: dict) -> dict:
+    """Call router_chain and attach the route label to the dict."""
+    q = info["question"]
+    label = router_chain.invoke({"question": q}).strip().lower()
+    info["route"] = label
+    return info
+
+router = RunnableLambda(route)
+
+app = (
+    router
+    | RunnableBranch(
+        (lambda d: d["route"] == "math", math_chain),
+        (lambda d: d["route"] == "code", code_chain),
+        # default branch
+        chat_chain,
+    )
+)
+
+print(app.invoke({"question": "2 + 5 * 3"}))
+      </div>
+
+      <p>
+        Key idea: <strong>separate decision step (router) from execution step (sub-chain)</strong>.
+        This keeps your orchestration easy to understand and extend.
+      </p>
+    </section>
+
+    <!-- CONTEXTUAL MEMORY -->
+    <section id="contextual-memory">
+      <h2>2. Contextual Memory Management</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Memory</span>
+        <span class="tag-pill">Conversation State</span>
+      </div>
+
+      <h3>2.1 What is Memory?</h3>
+      <p>
+        Memory in LangChain stores information about previous interactions or facts.
+        It allows the model to answer follow-up questions like:
+      </p>
+      <p><em>"What did I say about Databricks a few minutes ago?"</em></p>
+
+      <h3>2.2 Types of Conversation Memory</h3>
+      <ul>
+        <li><strong>ConversationBufferMemory</strong> – keeps full chat history.</li>
+        <li><strong>ConversationSummaryMemory</strong> – uses an LLM to summarize history.</li>
+        <li><strong>ConversationSummaryBufferMemory</strong> – hybrid: buffer + summary.</li>
+        <li><strong>VectorStore-backed Memory</strong> – saves messages as embeddings for retrieval.</li>
+      </ul>
+
+      <h3>2.3 Basic Conversation Buffer Memory</h3>
+      <div class="code-block">
+from langchain.chains import ConversationChain
+from langchain.memory import ConversationBufferMemory
+from langchain_openai import ChatOpenAI
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+memory = ConversationBufferMemory(return_messages=True)
+conv_chain = ConversationChain(llm=llm, memory=memory, verbose=True)
+
+conv_chain.invoke({"input": "My name is Gopi and I teach Databricks."})
+conv_chain.invoke({"input": "What did I say about myself?"})
+      </div>
+
+      <h3>2.4 Contextual Memory for Multiple Topics</h3>
+      <p>
+        For complex apps, you may want different "memory scopes":
+      </p>
+      <ul>
+        <li>One memory per <strong>user</strong> (multi-tenant system).</li>
+        <li>Separate memory for each <strong>task</strong> (support ticket, exam attempt, etc.).</li>
+      </ul>
+
+      <div class="note-box">
+        <strong>Design tip:</strong> Always decide "what is the unit of memory" in your app:
+        per user, per chat session, per project, etc. This guides how you store keys in Redis / DB.
+      </div>
+    </section>
+
+    <!-- LONG-TERM MEMORY -->
+    <section id="long-term-memory">
+      <h2>3. Long-term Memory Strategies</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Long-term Memory</span>
+        <span class="tag-pill">Persistence</span>
+      </div>
+
+      <h3>3.1 Short-term vs Long-term</h3>
+      <ul>
+        <li><strong>Short-term memory</strong> – lives only during a single session; often stored in RAM.</li>
+        <li><strong>Long-term memory</strong> – persisted to a database or vector store and reloaded later.</li>
+      </ul>
+
+      <h3>3.2 Pattern: Persist Important Facts Only</h3>
+      <p>
+        Instead of storing every utterance, build a "memory writer" chain that extracts only
+        important facts to store.
+      </p>
+
+      <div class="code-block">
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+memory_writer_prompt = ChatPromptTemplate.from_template(
+    "Extract important long-term facts about the user from this message.\n"
+    "Message: {message}\n"
+    "If nothing important, reply with 'NO_FACT'."
+)
+
+memory_writer = memory_writer_prompt | llm | StrOutputParser()
+
+msg = "I am planning to run a 6-week Databricks course for working professionals."
+facts = memory_writer.invoke({"message": msg})
+print("Facts to store:", facts)
+      </div>
+
+      <p>
+        The output "Facts to store" can be saved in:
+      </p>
+      <ul>
+        <li>Relational DB (PostgreSQL, SQL Server, etc.).</li>
+        <li>Vector store (FAISS, Chroma, Pinecone) with embeddings.</li>
+        <li>Key–value store (Redis) keyed by user ID.</li>
+      </ul>
+    </section>
+
+    <!-- MEMORY COMPRESSION -->
+    <section id="memory-compression">
+      <h2>4. Memory Compression</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Token Management</span>
+        <span class="tag-pill">Scaling Chats</span>
+      </div>
+
+      <h3>4.1 Why Compress Memory?</h3>
+      <p>
+        If a conversation is long, dumping the entire history into the prompt will:
+      </p>
+      <ul>
+        <li>Increase token usage and cost.</li>
+        <li>Risk exceeding the model context window.</li>
+        <li>Slow down responses.</li>
+      </ul>
+      <p>
+        Memory compression summarises or filters the history to keep only what matters.
+      </p>
+
+      <h3>4.2 Summary Buffer Memory</h3>
+      <p>
+        <code>ConversationSummaryBufferMemory</code> keeps a rolling summary and only
+        a small tail of raw messages.
+      </p>
+
+      <div class="code-block">
+from langchain.memory import ConversationSummaryBufferMemory
+from langchain_openai import ChatOpenAI
+from langchain.chains import ConversationChain
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+memory = ConversationSummaryBufferMemory(
+    llm=llm,
+    max_token_limit=400,  # size of raw buffer before summarizing
+    return_messages=True,
+)
+
+chain = ConversationChain(llm=llm, memory=memory, verbose=True)
+
+# After many turns the memory auto-summarizes old messages
+for i in range(8):
+    chain.invoke({"input": f"Turn {i}: Say something about Databricks."})
+
+print(memory.load_memory_variables({})["history"])
+      </div>
+
+      <div class="note-box">
+        <strong>Good practice:</strong> Combine summary-based memory with a vector-store
+        of important facts, so you have both compressed "story" and structured knowledge.
+      </div>
+    </section>
+
+    <!-- LANGSMITH TRACING -->
+    <section id="langsmith-tracing">
+      <h2>5. LangSmith Advanced Tracing</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Observability</span>
+        <span class="tag-pill">Debugging</span>
+      </div>
+
+      <h3>5.1 Why Tracing?</h3>
+      <p>
+        Complex chains and agents can involve multiple sub-calls:
+        routers, retrievers, tools, and nested LLM calls. Tracing lets you:
+      </p>
+      <ul>
+        <li>See the full call tree for each user request.</li>
+        <li>Inspect prompts, responses, and intermediate variables.</li>
+        <li>Measure latency and token usage for each step.</li>
+      </ul>
+
+      <h3>5.2 Enabling LangSmith</h3>
+      <p>
+        Typically you configure environment variables:
+      </p>
+      <div class="code-block">
+export LANGCHAIN_TRACING_V2="true"
+export LANGCHAIN_API_KEY="<your_langsmith_key>"
+export LANGCHAIN_PROJECT="LangChain-Advanced-Demo"
+      </div>
+
+      <p>
+        After this, calls made through LangChain automatically appear in the LangSmith UI
+        as traces, where you can drill down step by step.
+      </p>
+    </section>
+
+    <!-- ADVANCED AGENT ARCHITECTURES -->
+    <section id="advanced-agent-architectures">
+      <h2>6. Advanced Agent Architectures</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Agents</span>
+        <span class="tag-pill">Planning &amp; Tools</span>
+      </div>
+
+      <h3>6.1 What is an Agent?</h3>
+      <p>
+        An agent is a loop where the model decides:
+      </p>
+      <ol>
+        <li>Which tool to use (or whether to respond directly).</li>
+        <li>What arguments to pass to that tool.</li>
+        <li>How to interpret the tool output.</li>
+        <li>Whether to call another tool or give a final answer.</li>
+      </ol>
+
+      <div class="diagram">
+User Question
+      │
+      ▼
+[ Agent (LLM) ] ──► chooses tool + arguments
+      │
+      ▼
+[ Tool Execution ] ──► observation
+      │
+      └── loops until "final answer"
+      </div>
+
+      <h3>6.2 ReAct-style Agent</h3>
+      <p>
+        ReAct pattern interleaves <strong>Reasoning</strong> and <strong>Acting</strong>.
+        LangChain has built-in helpers to create such agents over tools.
+      </p>
+
+      <div class="code-block">
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain_openai import ChatOpenAI
+from langchain.tools import tool
+
+@tool
+def add_numbers(a: int, b: int) -> int:
+    "Add two integers and return the result."
+    return a + b
+
+tools = [add_numbers]
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+prompt = create_react_agent.create_prompt(tools)
+agent = create_react_agent(llm=llm, tools=tools, prompt=prompt)
+
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+
+agent_executor.invoke({"input": "What is 3 plus 7, and then multiply by 2?"})
+      </div>
+
+      <p>
+        The agent decides to use <code>add_numbers</code>, observes the result, and then
+        completes the reasoning steps to produce a final answer.
+      </p>
+    </section>
+
+    <!-- TOOL INTEGRATION -->
+    <section id="tool-integration">
+      <h2>7. Tool Integration</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Tools</span>
+        <span class="tag-pill">External Systems</span>
+      </div>
+
+      <h3>7.1 What Counts as a Tool?</h3>
+      <p>
+        Any function or API that the model can call via a structured description:
+      </p>
+      <ul>
+        <li>Database query function (SQL, MongoDB, etc.).</li>
+        <li>HTTP client for REST services.</li>
+        <li>Calculator, date/time utilities, file system operations.</li>
+      </ul>
+
+      <h3>7.2 Defining a Tool</h3>
+      <div class="code-block">
+from langchain.tools import tool
+
+@tool
+def get_course_price(course_name: str) -> str:
+    "Return the price of a given ItTechGenie course."
+    prices = {
+        "LangChain": "₹4,999",
+        "Databricks": "₹7,999",
+    }
+    return prices.get(course_name, "Course not found.")
+      </div>
+
+      <p>
+        When registered with an agent, the model sees this tool description and can decide
+        to call it using structured parameters:
+      </p>
+
+      <div class="code-block">
+tools = [get_course_price]
+# ... create agent with these tools as in the previous section
+      </div>
+    </section>
+
+    <!-- MULTI-AGENT COLLAB -->
+    <section id="multi-agent-collab">
+      <h2>8. Multi-agent Collaboration</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Multi-agent</span>
+        <span class="tag-pill">Orchestration</span>
+      </div>
+
+      <h3>8.1 Why Multiple Agents?</h3>
+      <p>
+        Instead of one "super agent" that knows everything, you can compose:
+      </p>
+      <ul>
+        <li>a <strong>Teacher Agent</strong> – explains concepts with examples.</li>
+        <li>a <strong>Quiz Agent</strong> – generates questions and evaluates answers.</li>
+        <li>a <strong>Planner Agent</strong> – decides which agent should act next.</li>
+      </ul>
+
+      <h3>8.2 Simple Coordinator Pattern</h3>
+      <p>
+        A simple way to implement multi-agent flows is to have a <strong>coordinator chain</strong>
+        that calls specific agents based on instructions.
+      </p>
+
+      <div class="code-block">
+from langchain_core.runnables import RunnableLambda
+
+def teacher_agent(question: str) -> str:
+    # call a LangChain chain specialized for explanations
+    ...
+
+def quiz_agent(topic: str) -> str:
+    # call a chain that generates MCQs
+    ...
+
+def coordinator(task: str) -> str:
+    if "explain" in task.lower():
+        return teacher_agent(task)
+    if "quiz" in task.lower():
+        return quiz_agent(task)
+    return "I am not sure which agent should handle this."
+
+multi_agent_app = RunnableLambda(lambda x: coordinator(x["input"]))
+
+print(multi_agent_app.invoke({"input": "Explain RAG with a small example."}))
+      </div>
+
+      <div class="note-box">
+        <strong>Further extension:</strong> For complex workflows, dedicated libraries
+        like LangGraph can model multi-agent systems as graphs with explicit nodes
+        (agents) and edges (transitions).
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

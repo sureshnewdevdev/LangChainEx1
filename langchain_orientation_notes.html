@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LangChain Orientation – Local LLM &amp; RAG Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f7f7fb;
+        color: #222;
+    }
+    .page-header {
+        background: linear-gradient(90deg, #8e24aa, #d81b60);
+        color: #fff;
+        padding: 18px 24px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.6rem;
+    }
+    .page-header p {
+        margin: 4px 0 0 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    .layout {
+        display: flex;
+        min-height: calc(100vh - 70px);
+    }
+    .sidebar {
+        width: 260px;
+        background-color: #fff;
+        border-right: 1px solid #e0e0e0;
+        padding: 12px;
+        box-sizing: border-box;
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
+    }
+    .sidebar-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        color: #8e24aa;
+    }
+    .nav-link {
+        display: block;
+        margin-bottom: 6px;
+        text-decoration: none;
+        color: #fff;
+        background-color: #a0007f;
+        border-radius: 4px;
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        border: 1px solid #880e4f;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .nav-link:hover {
+        background-color: #ba2d92;
+    }
+    .nav-link.active {
+        background-color: #fff;
+        color: #a0007f;
+        border-color: #a0007f;
+        font-weight: 600;
+    }
+    .content {
+        flex: 1;
+        padding: 24px;
+        box-sizing: border-box;
+        max-width: 980px;
+    }
+    h2 {
+        color: #8e24aa;
+        border-bottom: 2px solid #f1e1f6;
+        padding-bottom: 4px;
+        margin-top: 28px;
+    }
+    h3 {
+        color: #d81b60;
+        margin-top: 20px;
+    }
+    p {
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+    ul, ol {
+        margin-left: 22px;
+        font-size: 0.95rem;
+    }
+    .note-box {
+        border-left: 4px solid #ffb300;
+        background-color: #fff8e1;
+        padding: 8px 12px;
+        margin: 12px 0;
+        font-size: 0.9rem;
+    }
+    .code-block {
+        background-color: #263238;
+        color: #eceff1;
+        padding: 12px 14px;
+        border-radius: 4px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.85rem;
+        overflow-x: auto;
+        margin: 10px 0 16px 0;
+    }
+    .diagram {
+        background-color: #fff;
+        border: 1px dashed #bdbdbd;
+        padding: 10px 12px;
+        border-radius: 4px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.85rem;
+        white-space: pre;
+        overflow-x: auto;
+        margin: 10px 0 16px 0;
+    }
+    .tag-pill {
+        display: inline-block;
+        background-color: #f3e5f5;
+        color: #6a1b9a;
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 0.75rem;
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+    .section-meta {
+        margin: 6px 0 10px 0;
+    }
+    @media (max-width: 900px) {
+        .layout {
+            flex-direction: column;
+        }
+        .sidebar {
+            width: 100%;
+            position: static;
+            border-right: none;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            overflow-x: auto;
+        }
+        .sidebar-title {
+            display: none;
+        }
+        .nav-link {
+            flex: 0 0 auto;
+            margin-right: 8px;
+            margin-bottom: 0;
+        }
+        .content {
+            padding: 16px;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>LangChain Orientation – Local LLM &amp; RAG Demo</h1>
+  <p>Hands-on notes for understanding LangChain concepts using local Hugging Face models in Python.</p>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-title">LangChain-Orientation</div>
+    <a class="nav-link" href="#orientation">Understanding the Framework</a>
+    <a class="nav-link" href="#architecture">Latest LangChain architecture</a>
+    <a class="nav-link" href="#models">Introduction to Models</a>
+    <a class="nav-link" href="#llm-example">Using LLMs with LangChain (example)</a>
+    <a class="nav-link" href="#prompts">LangChain-Prompts</a>
+    <a class="nav-link" href="#prompt-templates">Prompt Templates</a>
+    <a class="nav-link" href="#parsing-output">Parsing Output</a>
+    <a class="nav-link" href="#serialization">Serialization of Prompts (concept)</a>
+    <a class="nav-link" href="#rag-demo">RAG Example with Local Models</a>
+    <a class="nav-link" href="#setup">Project Setup &amp; Files</a>
+    <a class="nav-link" href="#summary">Summary</a>
+  </nav>
+
+  <main class="content">
+    <section id="orientation">
+      <h2>1. Understanding the Framework</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Orientation</span>
+        <span class="tag-pill">Beginner Friendly</span>
+      </div>
+      <h3>Introduction</h3>
+      <p>
+        LangChain is a Python framework that helps you build applications powered by
+        Large Language Models (LLMs). Instead of manually writing boilerplate code
+        to talk to models, manage prompts, connect to external data sources, and
+        post-process responses, LangChain gives you ready-made building blocks.
+      </p>
+
+      <h3>Objectives of this Demo</h3>
+      <ul>
+        <li>Understand the <strong>key concepts</strong> in LangChain – prompts, LLMs, chains, embeddings, and vector stores.</li>
+        <li>Build a <strong>simple LLM chain</strong> using a local Hugging Face model.</li>
+        <li>Build a <strong>simple RAG (Retrieve–Augment–Generate)</strong> pipeline over a local text file.</li>
+        <li>See how LangChain components connect together using the new
+            <strong>LCEL (LangChain Expression Language)</strong> pipe syntax.</li>
+      </ul>
+
+      <div class="diagram">
+Simple LLM Chain
+----------------
+
+User Question
+     │
+     ▼
+[ Prompt Template ]
+     │
+     ▼
+[ Local LLM (distilgpt2) ]
+     │
+     ▼
+[ Parsed Answer ]
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>2. Latest LangChain Architecture (High-Level)</h2>
+      <p>
+        At a high level, LangChain provides several layers of abstractions. In this small
+        project we touch only the core ones:
+      </p>
+      <ul>
+        <li><strong>LLMs &amp; Chat Models</strong> – unified interface over models (OpenAI, Hugging Face, Ollama, local models).</li>
+        <li><strong>Prompting</strong> – prompt templates, chat prompts, and message formatting.</li>
+        <li><strong>Outputs</strong> – output parsers that turn raw model text into structured objects.</li>
+        <li><strong>Runnables / LCEL</strong> – a way to compose components using the pipe (<code>|</code>) operator.</li>
+        <li><strong>Retrievers &amp; Vector Stores</strong> – plug-ins for connecting embeddings to search engines like FAISS.</li>
+      </ul>
+
+      <div class="diagram">
+Mini Architecture in This Demo
+------------------------------
+
+[ data/notes.txt ]
+        │
+        ▼
+[ Text Splitter ]
+        │
+        ▼
+[ Embeddings (all-MiniLM-L6-v2) ]
+        │
+        ▼
+[ FAISS Vector Store ]
+        │
+   (Retriever)
+        │
+        ▼
+Question ─────────► [ RAG Chain: Retriever + Prompt + LLM + Parser ] ──► Answer
+      </div>
+    </section>
+
+    <section id="models">
+      <h2>3. Introduction to Models</h2>
+      <p>
+        In these examples we use <strong>local Hugging Face models</strong> instead of remote APIs.
+        This is ideal for teaching, offline demos, or environments without internet access.
+      </p>
+      <ul>
+        <li><code>distilgpt2</code> – a small causal language model used for text generation.</li>
+        <li><code>sentence-transformers/all-MiniLM-L6-v2</code> – a compact embedding model for semantic search.</li>
+      </ul>
+      <div class="note-box">
+        <strong>Note:</strong> These models are downloaded once to the Hugging Face cache
+        (for example, under <code>C:\\Users\\&lt;name&gt;\\.cache\\huggingface\\hub</code> on Windows),
+        and loaded from disk on future runs.
+      </div>
+    </section>
+
+    <section id="llm-example">
+      <h2>4. Using LLMs with LangChain – Basic Example</h2>
+      <p>
+        The first script, <code>basic_chain_hf.py</code>, shows how to connect a prompt and a local
+        model using LangChain. It asks a single question:
+        <em>"What is LangChain in simple words?"</em>
+      </p>
+
+      <h3>Code: <code>basic_chain_hf.py</code></h3>
+      <div class="code-block">
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from langchain_community.llms import HuggingFacePipeline
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+
+def main() -&gt; None:
+    model_name = "distilgpt2"
+
+    # Load local model
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name)
+
+    # Build HF text-generation pipeline
+    gen_pipeline = pipeline(
+        "text-generation",
+        model=model,
+        tokenizer=tokenizer,
+        max_new_tokens=128,
+        temperature=0.7,
+    )
+
+    # Wrap the pipeline as a LangChain LLM
+    llm = HuggingFacePipeline(pipeline=gen_pipeline)
+
+    # Prompt template (system + user)
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", "You are a helpful Python and AI tutor."),
+            ("user", "Question: {question}"),
+        ]
+    )
+
+    parser = StrOutputParser()
+
+    # LCEL chain: prompt -&gt; llm -&gt; parser
+    chain = prompt | llm | parser
+
+    user_question = "What is LangChain in simple words?"
+    print("Q:", user_question)
+    answer = chain.invoke({"question": user_question})
+    print("A:", answer)
+
+
+if __name__ == "__main__":
+    main()
+      </div>
+
+      <h3>Key Points</h3>
+      <ul>
+        <li><strong>Transformers</strong> handles downloading and loading the model.</li>
+        <li><strong>HuggingFacePipeline</strong> turns the HF pipeline into a LangChain LLM.</li>
+        <li><strong>ChatPromptTemplate</strong> formats the question and system instructions.</li>
+        <li><strong>StrOutputParser</strong> extracts the generated text as a simple string.</li>
+        <li><strong>LCEL chain</strong> (<code>prompt | llm | parser</code>) connects everything in a readable way.</li>
+      </ul>
+    </section>
+
+    <section id="prompts">
+      <h2>5. LangChain-Prompts</h2>
+      <p>
+        Prompts are the instructions and input text we send to the model. LangChain wraps
+        them into objects so you can reuse and parameterize them.
+      </p>
+      <p>In the basic example we used <code>ChatPromptTemplate.from_messages</code>:</p>
+      <div class="code-block">
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", "You are a helpful Python and AI tutor."),
+        ("user", "Question: {question}"),
+    ]
+)
+      </div>
+      <ul>
+        <li><strong>system message</strong> – sets the overall behavior of the assistant.</li>
+        <li><strong>user message</strong> – contains the actual question with a placeholder.</li>
+        <li><strong>{question}</strong> – filled at runtime using <code>chain.invoke({"question": ...})</code>.</li>
+      </ul>
+    </section>
+
+    <section id="prompt-templates">
+      <h2>6. Prompt Templates (RAG-focused)</h2>
+      <p>
+        In the RAG script we use another template that also accepts a <code>{context}</code>
+        variable. This context comes from the retriever (FAISS).
+      </p>
+      <div class="code-block">
+prompt = ChatPromptTemplate.from_template(
+    "You are a helpful assistant that answers questions only using the provided context.\n"
+    "If the answer is not in the context, say \"I don't know from the given notes.\"\n\n"
+    "Context:\n{context}\n\nQuestion:\n{question}"
+)
+      </div>
+      <p>
+        This pattern is typical for RAG systems: we clearly instruct the model to rely
+        only on the retrieved context and to admit when the answer is not present.
+      </p>
+    </section>
+
+    <section id="parsing-output">
+      <h2>7. Parsing Output</h2>
+      <p>
+        The simplest way to work with model responses is as plain text. LangChain
+        includes several output parsers; here we use <code>StrOutputParser</code>.
+      </p>
+      <div class="code-block">
+from langchain_core.output_parsers import StrOutputParser
+
+parser = StrOutputParser()
+chain = prompt | llm | parser
+      </div>
+      <p>
+        The parser takes the raw LLM response object and returns a
+        <code>str</code>. For more advanced use cases, you can use:
+      </p>
+      <ul>
+        <li><code>CommaSeparatedListOutputParser</code> – returns a list of values.</li>
+        <li><code>StructuredOutputParser</code> – for JSON-like outputs.</li>
+        <li>Custom parsers – to parse SQL, code blocks, etc.</li>
+      </ul>
+    </section>
+
+    <section id="serialization">
+      <h2>8. Serialization of Prompts (Concept)</h2>
+      <p>
+        In larger projects, you often want to <strong>store prompts outside the code</strong>, for example:
+      </p>
+      <ul>
+        <li>JSON or YAML configuration files</li>
+        <li>Database rows</li>
+        <li>Prompt management tools or UIs</li>
+      </ul>
+      <p>
+        While this small demo keeps prompts directly in Python, LangChain lets you
+        serialize and load prompts using standardized formats. This makes it
+        easier to:
+      </p>
+      <ul>
+        <li>Version prompts independently from code.</li>
+        <li>Allow non-developers to edit prompt text.</li>
+        <li>Reuse the same template across multiple chains.</li>
+      </ul>
+    </section>
+
+    <section id="rag-demo">
+      <h2>9. RAG Example with Local Models – <code>simple_rag_hf.py</code></h2>
+      <p>
+        The second script builds a <strong>Retrieve–Augment–Generate</strong> pipeline
+        using <code>data/notes.txt</code> as the knowledge base.
+      </p>
+
+      <h3>Indexing Phase (at startup)</h3>
+      <ol>
+        <li>Read <code>data/notes.txt</code>.</li>
+        <li>Split into chunks with <code>RecursiveCharacterTextSplitter</code>.</li>
+        <li>Create embeddings with <code>HuggingFaceEmbeddings</code>
+            (<code>all-MiniLM-L6-v2</code>).</li>
+        <li>Store embeddings in a FAISS index.</li>
+      </ol>
+
+      <h3>Query Phase (for each user question)</h3>
+      <ol>
+        <li>Use the FAISS retriever to find the top-k similar chunks.</li>
+        <li>Format them into a single context string via <code>format_docs</code>.</li>
+        <li>Inject <code>{context}</code> and <code>{question}</code> into the RAG prompt.</li>
+        <li>Generate the answer using local <code>distilgpt2</code>.</li>
+      </ol>
+
+      <div class="diagram">
+RAG Query Flow
+--------------
+
+User Question
+     │
+     ├─► [ Retriever (FAISS + Embeddings) ] ──► Top-k Chunks
+     │                                          │
+     │                                          ▼
+     │                                    format_docs()
+     │                                          │
+     │                                     Context String
+     │
+     ▼
+[ Prompt Template with {context} + {question} ]
+     │
+     ▼
+[ Local LLM (distilgpt2) ]
+     │
+     ▼
+[ Parsed Answer ]
+      </div>
+
+      <h3>Key LangChain Code Snippet</h3>
+      <div class="code-block">
+rag_chain = (
+    RunnableParallel(
+        context=retriever | format_docs,
+        question=RunnablePassthrough(),
+    )
+    | prompt
+    | llm
+    | parser
+)
+      </div>
+      <ul>
+        <li><strong>RunnableParallel</strong>:
+          <ul>
+            <li><code>context=retriever | format_docs</code> – fetch and format relevant chunks.</li>
+            <li><code>question=RunnablePassthrough()</code> – pass the original question as is.</li>
+          </ul>
+        </li>
+        <li>The result is a dict with keys <code>context</code> and <code>question</code>.</li>
+        <li>That dict feeds into the prompt, then into the local LLM, then the parser.</li>
+      </ul>
+
+      <h3>Running the Demo</h3>
+      <div class="code-block">
+# Activate virtual environment
+cd "C:\\AI Demo\\langchain_hf_demo"
+.\\.venv\\Scripts\\activate
+
+# Run the basic chain
+python basic_chain_hf.py
+
+# Run the RAG script
+python simple_rag_hf.py
+      </div>
+      <p>
+        You can now ask questions like:
+      </p>
+      <ul>
+        <li><code>What is LangChain?</code></li>
+        <li><code>What does RAG mean?</code></li>
+        <li><code>What are vector stores used for?</code></li>
+      </ul>
+      <p>
+        The model answers using only the information stored in
+        <code>data/notes.txt</code>.
+      </p>
+    </section>
+
+    <section id="setup">
+      <h2>10. Project Setup &amp; Files</h2>
+      <p>Recommended project structure:</p>
+      <div class="diagram">
+C:\\AI Demo\\langchain_hf_demo
+│
+├─ basic_chain_hf.py        # Simple LLM chain using local distilgpt2
+├─ simple_rag_hf.py         # Simple RAG pipeline over data/notes.txt
+├─ data/
+│   └─ notes.txt            # Knowledge base text file
+└─ .venv/                   # Python virtual environment (optional but recommended)
+      </div>
+
+      <h3>Example content for <code>data/notes.txt</code></h3>
+      <div class="code-block">
+LangChain is a Python framework for building applications powered by large language models (LLMs).
+It helps developers connect language models with prompts, tools, memory, and external data sources.
+
+Basic LangChain concepts:
+- LLMs: the language model that generates responses.
+- Prompts: templates or instructions given to the LLM.
+- Chains: sequences that connect prompts, models, and other components.
+- Tools: external functions or APIs the model can call.
+- Vector stores: databases that store embeddings for semantic search (for example, FAISS).
+
+RAG (Retrieve-Augment-Generate) is a pattern where you:
+1) Retrieve relevant information from a knowledge base.
+2) Augment the user question with that information.
+3) Generate an answer with an LLM based only on that augmented context.
+
+This demo uses LangChain to show:
+- A basic LLM chain
+- A simple RAG pipeline over this notes.txt file.
+      </div>
+    </section>
+
+    <section id="summary">
+      <h2>11. Summary</h2>
+      <p>
+        In this orientation you built two LangChain-based programs:
+      </p>
+      <ul>
+        <li><strong>basic_chain_hf.py</strong> – a simple LLM chain that:
+          <ul>
+            <li>Loads a local Hugging Face model (<code>distilgpt2</code>).</li>
+            <li>Uses a <code>ChatPromptTemplate</code> and <code>StrOutputParser</code>.</li>
+            <li>Demonstrates the LCEL pattern <code>prompt | llm | parser</code>.</li>
+          </ul>
+        </li>
+        <li><strong>simple_rag_hf.py</strong> – a local RAG pipeline that:
+          <ul>
+            <li>Reads domain knowledge from <code>data/notes.txt</code>.</li>
+            <li>Splits it into chunks and builds embeddings with <code>all-MiniLM-L6-v2</code>.</li>
+            <li>Uses FAISS as a vector store and <code>RunnableParallel</code> to build RAG.</li>
+            <li>Generates answers from a local LLM based only on retrieved context.</li>
+          </ul>
+        </li>
+      </ul>
+      <p>
+        You can now customize <code>notes.txt</code> with your own syllabus material
+        (Databricks, AWS RDS/Aurora, Dakshinamurthy &amp; Maha Vishnu, etc.)
+        and instantly get a domain-specific question–answering assistant.
+      </p>
+    </section>
+  </main>
+</div>
+</body>
+</html>

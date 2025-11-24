@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LangSmith & LangGraph – Detailed Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f7f7fb;
+        color: #222;
+    }
+    .page-header {
+        background: linear-gradient(90deg, #8e24aa, #d81b60);
+        color: #fff;
+        padding: 18px 24px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.6rem;
+    }
+    .page-header p {
+        margin: 4px 0 0 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    .layout {
+        display: flex;
+        min-height: calc(100vh - 70px);
+    }
+    .sidebar {
+        width: 280px;
+        background-color: #fff;
+        border-right: 1px solid #e0e0e0;
+        padding: 12px;
+        box-sizing: border-box;
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
+    }
+    .sidebar-group-title {
+        font-weight: 600;
+        margin: 8px 0 6px 0;
+        font-size: 0.9rem;
+        padding: 4px 6px;
+        border-radius: 4px;
+        background-color: #f3e5f5;
+        color: #6a1b9a;
+    }
+    .nav-link {
+        display: block;
+        margin-bottom: 6px;
+        text-decoration: none;
+        color: #fff;
+        background-color: #a0007f;
+        border-radius: 4px;
+        padding: 8px 10px;
+        font-size: 0.84rem;
+        border: 1px solid #880e4f;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .nav-link:hover {
+        background-color: #ba2d92;
+    }
+    .content {
+        flex: 1;
+        padding: 24px;
+        box-sizing: border-box;
+        max-width: 980px;
+    }
+    h2 {
+        color: #8e24aa;
+        border-bottom: 2px solid #f1e1f6;
+        padding-bottom: 4px;
+        margin-top: 28px;
+    }
+    h3 {
+        color: #d81b60;
+        margin-top: 20px;
+    }
+    p {
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+    ul, ol {
+        margin-left: 22px;
+        font-size: 0.95rem;
+    }
+    .note-box {
+        border-left: 4px solid #ffb300;
+        background-color: #fff8e1;
+        padding: 8px 12px;
+        margin: 12px 0;
+        font-size: 0.9rem;
+    }
+    .code-block {
+        background-color: #263238;
+        color: #eceff1;
+        padding: 12px 14px;
+        border-radius: 4px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.85rem;
+        overflow-x: auto;
+        margin: 10px 0 16px 0;
+        white-space: pre;
+    }
+    .diagram {
+        background-color: #fff;
+        border: 1px dashed #bdbdbd;
+        padding: 10px 12px;
+        border-radius: 4px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.85rem;
+        white-space: pre;
+        overflow-x: auto;
+        margin: 10px 0 16px 0;
+    }
+    .pill {
+        display: inline-block;
+        background-color: #f3e5f5;
+        color: #6a1b9a;
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 0.75rem;
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+    @media (max-width: 900px) {
+        .layout {
+            flex-direction: column;
+        }
+        .sidebar {
+            width: 100%;
+            position: static;
+            border-right: none;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            overflow-x: auto;
+        }
+        .sidebar-group-title {
+            display: none;
+        }
+        .nav-link {
+            flex: 0 0 auto;
+            margin-right: 8px;
+            margin-bottom: 0;
+        }
+        .content {
+            padding: 16px;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>LangSmith &amp; LangGraph – Detailed Notes</h1>
+  <p>Training notes for observability, debugging, and graph-based agent architectures.</p>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-group-title">LangSmith</div>
+    <a class="nav-link" href="#ls-fundamentals">LangSmith Fundamentals &amp; Observability</a>
+    <a class="nav-link" href="#ls-debugging">Debugging</a>
+    <a class="nav-link" href="#ls-tracing">Tracing</a>
+    <a class="nav-link" href="#ls-trace-config">Tracing configurations</a>
+    <a class="nav-link" href="#ls-dashboards">Monitor projects with dashboards</a>
+    <a class="nav-link" href="#ls-evaluations">Evaluations</a>
+    <a class="nav-link" href="#ls-define-evaluators">Define evaluators</a>
+    <a class="nav-link" href="#ls-configure-eval-data">Configure evaluation data</a>
+
+    <div class="sidebar-group-title">LangGraph</div>
+    <a class="nav-link" href="#lg-fundamentals">LangGraph Fundamentals &amp; State Management</a>
+
+    <div class="sidebar-group-title">Core Concepts</div>
+    <a class="nav-link" href="#core-graph-arch">Graph-Based Agent Architectures</a>
+    <a class="nav-link" href="#core-stategraph">State Management with StateGraph</a>
+    <a class="nav-link" href="#core-nodes-edges">Nodes, Edges, and Conditional Logic</a>
+    <a class="nav-link" href="#core-checkpointing">Checkpointing and Persistence</a>
+    <a class="nav-link" href="#core-sync-async">Synchronous vs. Asynchronous Execution</a>
+  </nav>
+
+  <main class="content">
+
+    <!-- LangSmith Fundamentals -->
+    <section id="ls-fundamentals">
+      <h2>1. LangSmith Fundamentals &amp; Observability</h2>
+      <span class="pill">LangSmith</span>
+      <span class="pill">Observability</span>
+
+      <h3>1.1 What is LangSmith?</h3>
+      <p>
+        LangSmith is an observability and evaluation platform for language-model
+        applications. It is designed to work closely with LangChain, but it can observe
+        <em>any</em> LLM app that emits traces in the right format.
+      </p>
+
+      <p>Typical problems that LangSmith solves:</p>
+      <ul>
+        <li>“What exactly happened inside this chain or agent when the user clicked <em>Run</em>?”</li>
+        <li>“Why did the model give a wrong or hallucinated answer?”</li>
+        <li>“How do I compare two prompt versions or two models side by side?”</li>
+      </ul>
+
+      <h3>1.2 Core Ideas of Observability</h3>
+      <p>
+        Observability is about making complex LLM systems <strong>transparent</strong>.
+        Instead of treating the model as a black box, you capture detailed logs of:
+      </p>
+      <ul>
+        <li>Inputs and outputs (prompts, model responses, tool calls).</li>
+        <li>Intermediate steps (each chain, each tool invocation).</li>
+        <li>Timing information and latency per step.</li>
+        <li>Custom metadata (user IDs, session IDs, experiment IDs).</li>
+      </ul>
+
+      <div class="diagram">
+User Request
+    │
+    ▼
+LangChain / Custom App
+    │  (sends traces)
+    ▼
++----------------------+
+|      LangSmith       |
+|  - traces            |
+|  - datasets          |
+|  - evaluations       |
++----------------------+
+    │
+    ▼
+Dashboards &amp; Debugging UI
+      </div>
+
+      <div class="note-box">
+        In training, describe LangSmith as
+        “Application monitoring + evaluation harness for your AI system”.
+      </div>
+    </section>
+
+    <!-- Debugging -->
+    <section id="ls-debugging">
+      <h2>2. Debugging</h2>
+      <span class="pill">LangSmith</span>
+      <span class="pill">Debugging</span>
+
+      <h3>2.1 Why Debugging is Hard with LLMs</h3>
+      <p>
+        In traditional software, you debug with breakpoints and logs. With LLM apps
+        you have:
+      </p>
+      <ul>
+        <li>Chains of prompts and models, sometimes calling tools.</li>
+        <li>Non-determinism (temperature &gt; 0).</li>
+        <li>Hidden context (system prompts, memory, RAG context).</li>
+      </ul>
+      <p>
+        LangSmith gives you a detailed trace of every step so you can replay and inspect
+        what the system “saw” at each stage.
+      </p>
+
+      <h3>2.2 Typical Debugging Flow</h3>
+      <ol>
+        <li>Run your app with LangSmith tracing enabled.</li>
+        <li>Open the run in the LangSmith UI.</li>
+        <li>Expand the chain tree to see each call (LLM, tool, retriever, etc.).</li>
+        <li>Inspect prompts, intermediate outputs, and context.</li>
+        <li>Adjust prompts, parameters, or code and re-run.</li>
+      </ol>
+
+      <div class="code-block">
+# Enable tracing via environment variables
+import os
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_API_KEY"] = "<your_api_key>"
+os.environ["LANGCHAIN_PROJECT"] = "My-LangSmith-Demo"
+
+# Now run your LangChain chain/agent as usual.
+result = my_chain.invoke({"question": "Why is tracing useful?"})
+      </div>
+    </section>
+
+    <!-- Tracing -->
+    <section id="ls-tracing">
+      <h2>3. Tracing</h2>
+      <span class="pill">Tracing</span>
+
+      <h3>3.1 What is a Trace?</h3>
+      <p>
+        A trace is a tree of calls generated during a single execution of your app.
+        Nodes in the tree can be:
+      </p>
+      <ul>
+        <li>LLM calls</li>
+        <li>Tool invocations</li>
+        <li>Retriever / vector store queries</li>
+        <li>Custom functions</li>
+      </ul>
+
+      <div class="diagram">
+Run (root)
+ ├─ Chain: "RAG QA"
+ │   ├─ Retriever call
+ │   └─ LLM call
+ └─ Feedback / Evaluation
+      </div>
+
+      <h3>3.2 Key Information Captured</h3>
+      <ul>
+        <li><strong>Inputs</strong> – original user question, retrieved documents, parameters.</li>
+        <li><strong>Outputs</strong> – final answer, intermediate answers, tool results.</li>
+        <li><strong>Timing</strong> – start time, end time, latency per span.</li>
+        <li><strong>Metadata</strong> – user, environment (dev / prod), tags, version.</li>
+      </ul>
+    </section>
+
+    <!-- Tracing configurations -->
+    <section id="ls-trace-config">
+      <h2>4. Tracing Configurations</h2>
+      <span class="pill">Configuration</span>
+
+      <h3>4.1 Environment Variables</h3>
+      <p>
+        The simplest way to configure tracing is by environment variables.
+      </p>
+      <div class="code-block">
+export LANGCHAIN_TRACING_V2=true
+export LANGCHAIN_API_KEY="<your_langsmith_key>"
+export LANGCHAIN_PROJECT="Customer-Support-Bot"
+      </div>
+
+      <h3>4.2 Programmatic Configuration</h3>
+      <p>
+        You can also configure tracing in code for more control (for example, enable
+        tracing only in staging or for particular users).
+      </p>
+      <div class="code-block">
+from langsmith import Client
+from langchain.smith import RunTree
+
+client = Client()  # uses env vars
+
+with RunTree(
+    name="manual-run",
+    project_name="My-Manual-Traces",
+    client=client,
+) as run:
+    # your code here
+    answer = chain.invoke({"question": "Trace this specific call"})
+    run.end(outputs={"answer": answer})
+      </div>
+
+      <div class="note-box">
+        In practice you usually rely on automatic tracing from LangChain.
+        Manual runs are useful when instrumenting custom apps.
+      </div>
+    </section>
+
+    <!-- Dashboards -->
+    <section id="ls-dashboards">
+      <h2>5. Monitor Projects with Dashboards</h2>
+      <span class="pill">Monitoring</span>
+
+      <h3>5.1 What Dashboards Provide</h3>
+      <p>
+        Dashboards summarize runs and evaluations across time, for example:
+      </p>
+      <ul>
+        <li>Total number of runs per day.</li>
+        <li>Latency distributions.</li>
+        <li>Success rate / failure rate.</li>
+        <li>Evaluation scores (accuracy, helpfulness, etc.).</li>
+      </ul>
+
+      <h3>5.2 Typical Monitoring Questions</h3>
+      <ul>
+        <li>“Did my new prompt reduce hallucinations?”</li>
+        <li>“Which tools are failing the most?”</li>
+        <li>“How does latency change with different models?”</li>
+      </ul>
+
+      <div class="diagram">
++-------------------------------------------------------+
+|                   LangSmith Dashboard                 |
+|                                                       |
+|  - Runs over time   - Avg latency   - Error rate      |
+|  - Score trends     - Model versions - Prompt versions|
++-------------------------------------------------------+
+      </div>
+    </section>
+
+    <!-- Evaluations -->
+    <section id="ls-evaluations">
+      <h2>6. Evaluations</h2>
+      <span class="pill">Quality</span>
+      <span class="pill">Testing</span>
+
+      <h3>6.1 Why Evaluate LLM Apps?</h3>
+      <p>
+        Because outputs are probabilistic, you cannot rely only on unit tests.
+        Evaluations systematically measure model quality using datasets of
+        test cases and scoring functions.
+      </p>
+
+      <h3>6.2 Types of Evaluations</h3>
+      <ul>
+        <li><strong>String matching</strong> – exact or fuzzy comparison with a reference answer.</li>
+        <li><strong>LLM-as-a-judge</strong> – another model scores correctness, helpfulness, tone.</li>
+        <li><strong>Custom metrics</strong> – numeric scoring (e.g., BLEU, ROUGE), or domain KPIs.</li>
+      </ul>
+
+      <h3>6.3 Dataset + Run + Feedback</h3>
+      <p>
+        In LangSmith, an evaluation usually consists of:
+      </p>
+      <ol>
+        <li>A <strong>dataset</strong> of inputs (and optionally ground-truth outputs).</li>
+        <li>A <strong>model or chain</strong> you want to evaluate.</li>
+        <li>One or more <strong>evaluators</strong> that compute scores.</li>
+      </ol>
+    </section>
+
+    <!-- Define evaluators -->
+    <section id="ls-define-evaluators">
+      <h2>7. Define Evaluators</h2>
+      <span class="pill">Evaluators</span>
+
+      <h3>7.1 Built-in Evaluators</h3>
+      <p>
+        LangSmith ships with several common evaluators, such as:
+      </p>
+      <ul>
+        <li>Correctness / relevance using LLM-as-a-judge.</li>
+        <li>Similarity to reference answer.</li>
+        <li>Safety checks (no PII, toxicity, etc.).</li>
+      </ul>
+
+      <h3>7.2 Custom Evaluator Function</h3>
+      <p>
+        You can also define your own Python function as an evaluator.
+      </p>
+
+      <div class="code-block">
+def length_penalty_evaluator(run, example):
+    # Simple custom evaluator:
+    # penalize answers longer than 200 characters.
+    output = run.outputs.get("output", "")
+    if len(output) <= 200:
+        score = 1.0
+    else:
+        score = 0.5
+    return {"score": score, "comment": f"Length = {len(output)}"}
+      </div>
+    </section>
+
+    <!-- Configure evaluation data -->
+    <section id="ls-configure-eval-data">
+      <h2>8. Configure Evaluation Data</h2>
+      <span class="pill">Datasets</span>
+
+      <h3>8.1 Creating a Dataset</h3>
+      <p>
+        A dataset is usually a table with:
+      </p>
+      <ul>
+        <li><strong>input</strong> fields (question, context, chat history).</li>
+        <li><strong>expected output</strong> (optional ground truth).</li>
+        <li><strong>metadata</strong> (topic, difficulty, tags).</li>
+      </ul>
+
+      <div class="code-block">
+from langsmith import Client
+
+client = Client()
+dataset = client.create_dataset(
+    name="faq-eval-set",
+    description="Evaluation questions for FAQ bot"
+)
+
+client.create_example(
+    inputs={"question": "What is LangChain?"},
+    outputs={"answer": "A framework for building LLM applications."},
+    dataset_id=dataset.id,
+)
+      </div>
+
+      <p>
+        During evaluation, LangSmith runs your chain on each dataset row, collects
+        outputs, and applies the configured evaluators.
+      </p>
+    </section>
+
+    <!-- LangGraph fundamentals -->
+    <section id="lg-fundamentals">
+      <h2>9. LangGraph Fundamentals &amp; State Management</h2>
+      <span class="pill">LangGraph</span>
+      <span class="pill">Agents</span>
+
+      <h3>9.1 What is LangGraph?</h3>
+      <p>
+        LangGraph is a framework for building <strong>stateful, graph-based agents</strong>.
+        Instead of thinking of an agent as a single function that loops, you represent
+        it as a directed graph of nodes (steps) and edges (transitions).
+      </p>
+
+      <h3>9.2 Why Graphs?</h3>
+      <ul>
+        <li>Clear control flow (you can visualize and reason about paths).</li>
+        <li>Support for loops, branches, and error handling.</li>
+        <li>Built-in checkpointing and persistence of agent state.</li>
+      </ul>
+
+      <div class="diagram">
+[User Input]
+    │
+    ▼
+  Node: "Router"
+   ├── if question about billing ──► Node: "BillingTool"
+   ├── if question about tech    ──► Node: "TechSupportTool"
+   └── else                      ──► Node: "FallbackLLM"
+      </div>
+    </section>
+
+    <!-- Core Concepts: Graph-Based Architectures -->
+    <section id="core-graph-arch">
+      <h2>10. Graph-Based Agent Architectures</h2>
+      <span class="pill">Core Concepts</span>
+
+      <h3>10.1 Traditional Agent vs. Graph-Based Agent</h3>
+      <p>
+        A traditional “ReAct-style” agent usually:
+      </p>
+      <ul>
+        <li>Runs inside a loop.</li>
+        <li>Lets the model decide on tools and thoughts each step.</li>
+      </ul>
+      <p>
+        In a graph-based agent, you explicitly define:
+      </p>
+      <ul>
+        <li>Nodes – functions / LLM calls / tools.</li>
+        <li>Edges – deterministic or conditional transitions between nodes.</li>
+      </ul>
+
+      <h3>10.2 Benefits</h3>
+      <ul>
+        <li>Better debugging; easier to see exactly where things go wrong.</li>
+        <li>Safer control over which tools are allowed and when.</li>
+        <li>Natural place to integrate business rules and approvals.</li>
+      </ul>
+    </section>
+
+    <!-- StateGraph -->
+    <section id="core-stategraph">
+      <h2>11. State Management with StateGraph</h2>
+      <span class="pill">StateGraph</span>
+
+      <h3>11.1 State Object</h3>
+      <p>
+        In LangGraph, state is usually a Python object (often a dict-like structure)
+        that is passed from node to node. Nodes read and update state.
+      </p>
+
+      <div class="code-block">
+from typing import TypedDict, List
+from langgraph.graph import StateGraph
+
+class ChatState(TypedDict):
+    messages: List[str]
+    user_profile: dict
+
+graph = StateGraph(ChatState)
+      </div>
+
+      <h3>11.2 Adding Nodes</h3>
+      <div class="code-block">
+def add_user_message(state: ChatState) -> ChatState:
+    # append the latest user message (placeholder)
+    state["messages"].append("User: hi")
+    return state
+
+graph.add_node("user_input", add_user_message)
+      </div>
+
+      <p>
+        Each node takes the current state and returns a new state. LangGraph
+        automatically wires these nodes according to edges you define.
+      </p>
+    </section>
+
+    <!-- Nodes, Edges, Conditional Logic -->
+    <section id="core-nodes-edges">
+      <h2>12. Nodes, Edges, and Conditional Logic</h2>
+      <span class="pill">Flow Control</span>
+
+      <h3>12.1 Nodes</h3>
+      <p>
+        Nodes represent units of work:
+      </p>
+      <ul>
+        <li>LLM calls (e.g., “decide next action”).</li>
+        <li>Tool calls (database query, API call).</li>
+        <li>Custom Python functions (business rules, logging).</li>
+      </ul>
+
+      <h3>12.2 Edges</h3>
+      <p>
+        Edges specify which node to run next. You can have:
+      </p>
+      <ul>
+        <li><strong>Static edges</strong> – always go to the same next node.</li>
+        <li><strong>Conditional edges</strong> – next node depends on state.</li>
+      </ul>
+
+      <div class="code-block">
+def router(state: ChatState) -> str:
+    last_msg = state["messages"][-1]
+    if "price" in last_msg.lower():
+        return "pricing_node"
+    return "general_node"
+
+graph.add_node("router", router)
+# In real LangGraph code you would use conditional edge APIs
+# to wire router -> pricing_node or general_node.
+      </div>
+
+      <p>
+        In practice you use dedicated APIs for conditional edges, but this
+        pseudocode illustrates the idea: routing by inspecting state.
+      </p>
+    </section>
+
+    <!-- Checkpointing -->
+    <section id="core-checkpointing">
+      <h2>13. Checkpointing and Persistence</h2>
+      <span class="pill">Reliability</span>
+
+      <h3>13.1 Why Checkpoint?</h3>
+      <p>
+        Agent workflows can be long-running and may involve external services.
+        Checkpointing allows you to:
+      </p>
+      <ul>
+        <li>Resume flows after a crash or timeout.</li>
+        <li>Pause and continue later.</li>
+        <li>Inspect historical states for debugging or analytics.</li>
+      </ul>
+
+      <h3>13.2 Conceptual Flow</h3>
+      <div class="diagram">
+[State S0] --Node1--> [State S1] --Node2--> [State S2]
+   │                     │
+   └── checkpoint 0      └── checkpoint 1
+      </div>
+
+      <p>
+        When a checkpoint is stored (for example, in a database), you can reload
+        it and re-run the graph from that point instead of starting at S0.
+      </p>
+    </section>
+
+    <!-- Sync vs Async -->
+    <section id="core-sync-async">
+      <h2>14. Synchronous vs. Asynchronous Execution</h2>
+      <span class="pill">Performance</span>
+
+      <h3>14.1 Synchronous</h3>
+      <p>
+        In synchronous execution, the graph runs in a single call, blocking the
+        caller until completion. This is easier to reason about, ideal for:
+      </p>
+      <ul>
+        <li>Short-lived tasks.</li>
+        <li>Command-line tools.</li>
+        <li>Simple web APIs where latency is acceptable.</li>
+      </ul>
+
+      <h3>14.2 Asynchronous</h3>
+      <p>
+        Asynchronous execution is designed for:
+      </p>
+      <ul>
+        <li>Long-running workflows.</li>
+        <li>Parallel tool calls (e.g., multiple APIs queried at once).</li>
+        <li>Streaming partial results back to the user.</li>
+      </ul>
+
+      <div class="diagram">
+Sync:
+   request -----> [run graph] -----> response
+
+Async:
+   request -----> [start run] -----> run_id
+                       │
+                       ├--> intermediate updates / checkpoints
+                       └--> final result
+      </div>
+
+      <div class="note-box">
+        For training, relate sync vs. async to everyday tools:
+        sync = single-step calculator, async = food delivery app tracking each stage.
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

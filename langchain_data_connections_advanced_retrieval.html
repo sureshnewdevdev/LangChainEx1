@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Data Connections and Advanced Retrieval – LangChain Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f7f7fb;
+        color: #222;
+    }
+    .page-header {
+        background: linear-gradient(90deg, #8e24aa, #d81b60);
+        color: #fff;
+        padding: 18px 24px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.6rem;
+    }
+    .page-header p {
+        margin: 4px 0 0 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    .layout {
+        display: flex;
+        min-height: calc(100vh - 70px);
+    }
+    .sidebar {
+        width: 260px;
+        background-color: #fff;
+        border-right: 1px solid #e0e0e0;
+        padding: 12px;
+        box-sizing: border-box;
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
+    }
+    .sidebar-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+        color: #8e24aa;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .nav-link {
+        display: block;
+        margin-bottom: 6px;
+        text-decoration: none;
+        color: #fff;
+        background-color: #a0007f;
+        border-radius: 4px;
+        padding: 8px 10px;
+        font-size: 0.85rem;
+        border: 1px solid #880e4f;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .nav-link:hover {
+        background-color: #ba2d92;
+    }
+    .content {
+        flex: 1;
+        padding: 24px;
+        box-sizing: border-box;
+        max-width: 980px;
+    }
+    h2 {
+        color: #8e24aa;
+        border-bottom: 2px solid #f1e1f6;
+        padding-bottom: 4px;
+        margin-top: 28px;
+    }
+    h3 {
+        color: #d81b60;
+        margin-top: 20px;
+    }
+    p {
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+    ul, ol {
+        margin-left: 22px;
+        font-size: 0.95rem;
+    }
+    .note-box {
+        border-left: 4px solid #ffb300;
+        background-color: #fff8e1;
+        padding: 8px 12px;
+        margin: 12px 0;
+        font-size: 0.9rem;
+    }
+    .code-block {
+        background-color: #263238;
+        color: #eceff1;
+        padding: 12px 14px;
+        border-radius: 4px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.85rem;
+        overflow-x: auto;
+        margin: 10px 0 16px 0;
+        white-space: pre;
+    }
+    .diagram {
+        background-color: #fff;
+        border: 1px dashed #bdbdbd;
+        padding: 10px 12px;
+        border-radius: 4px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.85rem;
+        white-space: pre;
+        overflow-x: auto;
+        margin: 10px 0 16px 0;
+    }
+    .tag-pill {
+        display: inline-block;
+        background-color: #f3e5f5;
+        color: #6a1b9a;
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 0.75rem;
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+    .section-meta {
+        margin: 6px 0 10px 0;
+    }
+    @media (max-width: 900px) {
+        .layout {
+            flex-direction: column;
+        }
+        .sidebar {
+            width: 100%;
+            position: static;
+            border-right: none;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            overflow-x: auto;
+        }
+        .sidebar-title {
+            display: none;
+        }
+        .nav-link {
+            flex: 0 0 auto;
+            margin-right: 8px;
+            margin-bottom: 0;
+        }
+        .content {
+            padding: 16px;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>Data Connections and Advanced Retrieval</h1>
+  <p>Hands-on notes for connecting external data to LangChain and building stronger retrieval pipelines.</p>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-title">Data Connections and Advanc...</div>
+    <a class="nav-link" href="#enhanced-loaders">Enhanced document loaders</a>
+    <a class="nav-link" href="#advanced-transformers">Advanced document transformers</a>
+    <a class="nav-link" href="#vector-embeddings">Vector embedding techniques</a>
+    <a class="nav-link" href="#hybrid-search">Hybrid search strategies</a>
+    <a class="nav-link" href="#context-compression">Context compression</a>
+    <a class="nav-link" href="#multi-query">Multi-query retrieval</a>
+  </nav>
+
+  <main class="content">
+
+    <section id="enhanced-loaders">
+      <h2>1. Enhanced Document Loaders</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Data Connections</span>
+        <span class="tag-pill">Input Layer</span>
+      </div>
+
+      <h3>1.1 What is a Document Loader?</h3>
+      <p>
+        A document loader is the component that knows how to read raw data from a source
+        and turn it into a list of <strong>Document</strong> objects that LangChain can work with.
+        Each document typically has:
+      </p>
+      <ul>
+        <li><strong>page_content</strong> – the text content.</li>
+        <li><strong>metadata</strong> – extra information (file name, URL, page number, tags, etc.).</li>
+      </ul>
+
+      <div class="diagram">
+Data Source  ──►  Loader  ──►  [Document(page_content, metadata), ...]
+      </div>
+
+      <h3>1.2 Common Enhanced Loaders</h3>
+      <ul>
+        <li><code>PyPDFLoader</code> – PDFs with per-page metadata.</li>
+        <li><code>DirectoryLoader</code> – entire folders of text/markdown/docx/pdf.</li>
+        <li><code>WebBaseLoader</code> – HTML pages from the web.</li>
+        <li><code>CSVLoader</code> / <code>Unstructured*</code> loaders – tables, office docs, etc.</li>
+      </ul>
+
+      <h3>1.3 Example: Loading a Folder of Mixed Files</h3>
+      <div class="code-block">
+from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader, TextLoader
+
+# Load all PDFs in a folder
+pdf_loader = DirectoryLoader(
+    "data/pdfs",
+    glob="**/*.pdf",
+    loader_cls=PyPDFLoader,
+)
+
+# Load all .txt files in a folder
+txt_loader = DirectoryLoader(
+    "data/text",
+    glob="**/*.txt",
+    loader_cls=TextLoader,
+)
+
+pdf_docs = pdf_loader.load()
+txt_docs = txt_loader.load()
+
+all_docs = pdf_docs + txt_docs
+print("Total documents:", len(all_docs))
+print("Sample metadata:", all_docs[0].metadata)
+      </div>
+
+      <div class="note-box">
+        <strong>Teaching tip:</strong> Show students the raw <code>metadata</code> of a document.
+        They will immediately understand how you can later filter by source, author, or topic.
+      </div>
+    </section>
+
+    <section id="advanced-transformers">
+      <h2>2. Advanced Document Transformers</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Pre-processing</span>
+        <span class="tag-pill">Chunking &amp; Cleaning</span>
+      </div>
+
+      <h3>2.1 Why Transform Documents?</h3>
+      <p>
+        Raw documents are almost never in the right shape for retrieval.
+        We usually need to:
+      </p>
+      <ul>
+        <li>Split large documents into smaller <strong>chunks</strong>.</li>
+        <li>Clean or normalize text (remove headers, footers, HTML tags).</li>
+        <li>Add or adjust <strong>metadata</strong> (section titles, categories, IDs).</li>
+      </ul>
+
+      <h3>2.2 Recursive Character Text Splitter</h3>
+      <p>
+        <code>RecursiveCharacterTextSplitter</code> is the most popular splitter.
+        It tries to cut text first by paragraphs, then sentences, then smaller units
+        while keeping chunks inside a maximum size.
+      </p>
+
+      <div class="code-block">
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=800,
+    chunk_overlap=150,
+    add_start_index=True,   # store position of chunk in original text
+)
+
+chunked_docs = splitter.split_documents(all_docs)
+print("Chunks:", len(chunked_docs))
+print("Example chunk metadata:", chunked_docs[0].metadata)
+      </div>
+
+      <h3>2.3 Custom Transform: Add Section Tags</h3>
+      <p>
+        You can write your own transformer by looping through documents and modifying
+        <code>metadata</code>. Example: tagging all PDF-derived chunks with
+        <code>source_type = "pdf"</code>.
+      </p>
+
+      <div class="code-block">
+def tag_source_type(docs, source_type):
+    for d in docs:
+        d.metadata["source_type"] = source_type
+    return docs
+
+pdf_chunks = tag_source_type(pdf_docs, "pdf")
+txt_chunks = tag_source_type(txt_docs, "text")
+all_tagged = pdf_chunks + txt_chunks
+      </div>
+    </section>
+
+    <section id="vector-embeddings">
+      <h2>3. Vector Embedding Techniques</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Embeddings</span>
+        <span class="tag-pill">Semantic Search</span>
+      </div>
+
+      <h3>3.1 What are Embeddings?</h3>
+      <p>
+        Embeddings are numeric vectors that represent text in a high-dimensional space.
+        Texts with similar meaning end up with vectors that are close to each other.
+        This is the foundation for semantic search and RAG.
+      </p>
+
+      <div class="diagram">
+"LangChain tutorial"   ──►  [0.12, -0.33, 0.88, ...]
+"Guide to LangChain"   ──►  [0.11, -0.30, 0.90, ...]
+      </div>
+
+      <h3>3.2 Creating Embeddings with Sentence Transformers</h3>
+      <p>
+        For local embeddings, a common choice is
+        <code>sentence-transformers/all-MiniLM-L6-v2</code>.
+      </p>
+
+      <div class="code-block">
+from langchain_community.embeddings import HuggingFaceEmbeddings
+
+emb_model_name = "sentence-transformers/all-MiniLM-L6-v2"
+
+embeddings = HuggingFaceEmbeddings(
+    model_name=emb_model_name,
+    encode_kwargs={"normalize_embeddings": True},
+)
+
+vector = embeddings.embed_query("What is LangChain?")
+print("Vector length:", len(vector))
+      </div>
+
+      <h3>3.3 Building a Vector Store with FAISS</h3>
+      <p>
+        Once you have embeddings, you can store them in a <strong>vector store</strong>
+        such as FAISS.
+      </p>
+
+      <div class="code-block">
+from langchain_community.vectorstores import FAISS
+
+# chunked_docs produced earlier
+vectorstore = FAISS.from_documents(chunked_docs, embedding=embeddings)
+
+retriever = vectorstore.as_retriever(
+    search_type="similarity",
+    search_kwargs={"k": 4},
+)
+
+results = retriever.get_relevant_documents("Explain RAG in simple words")
+print("Retrieved chunks:", len(results))
+      </div>
+
+      <div class="note-box">
+        <strong>Tip:</strong> Normalizing embeddings (unit length) makes similarity
+        search more stable, especially when combining multiple embedding models.
+      </div>
+    </section>
+
+    <section id="hybrid-search">
+      <h2>4. Hybrid Search Strategies</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Retrieval</span>
+        <span class="tag-pill">Hybrid Search</span>
+      </div>
+
+      <h3>4.1 Why Hybrid Search?</h3>
+      <p>
+        Pure vector search is great for semantic similarity but sometimes misses
+        exact keywords like IDs, error codes, or rare terms. Hybrid search combines:
+      </p>
+      <ul>
+        <li><strong>Dense vector search</strong> – semantic similarity.</li>
+        <li><strong>Sparse / keyword search</strong> – traditional term-based matching (BM25, TF–IDF).</li>
+      </ul>
+
+      <h3>4.2 Simple Hybrid: Merge Results from Two Retrievers</h3>
+      <p>
+        LangChain provides an <code>EnsembleRetriever</code> to combine vector and
+        keyword retrievers.
+      </p>
+
+      <div class="code-block">
+from langchain_community.retrievers import BM25Retriever, EnsembleRetriever
+
+# Keyword-based retriever (works on the same chunked_docs list)
+bm25_retriever = BM25Retriever.from_documents(chunked_docs)
+bm25_retriever.k = 4
+
+# Semantic retriever from FAISS
+faiss_retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+
+# Combine both
+hybrid_retriever = EnsembleRetriever(
+    retrievers=[bm25_retriever, faiss_retriever],
+    weights=[0.4, 0.6],   # tune these
+)
+
+docs = hybrid_retriever.get_relevant_documents("error code 500 in LangChain example")
+for d in docs:
+    print(d.metadata.get("source"), ":", d.page_content[:80])
+      </div>
+
+      <p>
+        The ensemble retriever scores documents from both retrievers and merges them,
+        giving you the best of both worlds.
+      </p>
+    </section>
+
+    <section id="context-compression">
+      <h2>5. Context Compression</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Token Savings</span>
+        <span class="tag-pill">Summarization</span>
+      </div>
+
+      <h3>5.1 Why Compress Context?</h3>
+      <p>
+        Sometimes the retriever returns too many or too-long chunks, which can exceed
+        the model's context window or simply waste tokens. Context compression tries to:
+      </p>
+      <ul>
+        <li>Filter out irrelevant parts.</li>
+        <li>Summarize long passages into shorter ones.</li>
+        <li>Keep only the information needed for the current question.</li>
+      </ul>
+
+      <h3>5.2 Example: Compression Retriever</h3>
+      <p>
+        LangChain has a <strong>ContextualCompressionRetriever</strong> that wraps
+        an existing retriever and a compressor (usually an LLM-based summarizer).
+      </p>
+
+      <div class="code-block">
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import LLMChainExtractor
+from langchain_openai import ChatOpenAI  # or any compatible chat model
+
+base_retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+compressor = LLMChainExtractor.from_llm(llm)
+compression_retriever = ContextualCompressionRetriever(
+    base_retriever=base_retriever,
+    base_compressor=compressor,
+)
+
+compressed_docs = compression_retriever.get_relevant_documents(
+    "Give a short summary of LangChain RAG."
+)
+
+print("Number of compressed docs:", len(compressed_docs))
+print(compressed_docs[0].page_content)
+      </div>
+
+      <div class="note-box">
+        <strong>Idea:</strong> Use compression when students ask broad questions on
+        very large documents (full course notes, multiple PDFs, etc.).
+      </div>
+    </section>
+
+    <section id="multi-query">
+      <h2>6. Multi-query Retrieval</h2>
+      <div class="section-meta">
+        <span class="tag-pill">Advanced Retrieval</span>
+        <span class="tag-pill">Recall Boosting</span>
+      </div>
+
+      <h3>6.1 Motivation</h3>
+      <p>
+        A single user query may not capture all the ways information appears in your
+        documents. Multi-query retrieval uses an LLM to rewrite the question into
+        several alternative queries and then searches for all of them.
+      </p>
+
+      <div class="diagram">
+Original question:
+    "How do I connect LangChain to a PDF file?"
+
+LLM generates:
+    - "load pdf with pypdf loader in langchain"
+    - "read pdf as document objects"
+    - "example code for pypdfloader"
+      </div>
+
+      <h3>6.2 MultiQueryRetriever Example</h3>
+      <div class="code-block">
+from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain_openai import ChatOpenAI  # or any other chat model
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+multi_query_retriever = MultiQueryRetriever.from_llm(
+    retriever=vectorstore.as_retriever(search_kwargs={"k": 3}),
+    llm=llm,
+)
+
+query = "How do I load and search PDFs with LangChain?"
+docs = multi_query_retriever.get_relevant_documents(query)
+
+print("Retrieved docs:", len(docs))
+for i, d in enumerate(docs[:3], start=1):
+    print(f"Doc {i}:", d.page_content[:90], "...")
+      </div>
+
+      <p>
+        This approach greatly improves recall, especially when your notes use
+        slightly different wording than the student's question.
+      </p>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
