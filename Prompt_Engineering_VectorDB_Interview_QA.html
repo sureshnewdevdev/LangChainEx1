@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Prompt Engineering & Vector DB – Interview Q&A | ItTechGenie</title>
+<meta charset="utf-8">
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin:0;
+  padding:0;
+  background:#f7f7f7;
+}
+.sidebar {
+  width:260px;
+  background:#e8d8ff;
+  height:100vh;
+  position:fixed;
+  top:0;
+  left:0;
+  overflow-y:auto;
+  padding:10px;
+  border-right:3px solid #ccc;
+}
+.sidebar h2 {
+  margin-top:0;
+  color:#b300b3;
+  text-align:center;
+}
+.sidebar h3 {
+  margin:10px 0 5px 0;
+  font-size:14px;
+  color:#b300b3;
+  border-top:1px solid #d5bfff;
+  padding-top:5px;
+}
+.sidebar a {
+  display:block;
+  padding:8px 10px;
+  margin:4px 0;
+  text-decoration:none;
+  background:#d2a8ff;
+  border-radius:5px;
+  color:#000;
+  font-weight:bold;
+  font-size:13px;
+}
+.sidebar a:hover {
+  background:#bf66ff;
+  color:white;
+}
+.content {
+  margin-left:280px;
+  padding:20px;
+}
+h1 {
+  color:#6a0dad;
+}
+h2 {
+  color:#8a2be2;
+  border-bottom:2px solid #e0c8ff;
+  padding-bottom:4px;
+}
+.intro-box {
+  background:#fff;
+  border-left:5px solid #8a2be2;
+  padding:15px;
+  border-radius:5px;
+}
+.question {
+  background:white;
+  border-left:5px solid #6a0dad;
+  padding:15px;
+  margin:15px 0 0 0;
+  border-radius:5px 5px 0 0;
+  cursor:pointer;
+  font-weight:bold;
+}
+.question:hover {
+  background:#f0e6ff;
+}
+.answer {
+  display:none;
+  background:#fafafa;
+  padding:15px;
+  border-left:5px solid #999;
+  margin:0 0 10px 0;
+  border-radius:0 0 5px 5px;
+  line-height:1.5;
+}
+code {
+  background:#eee;
+  padding:2px 4px;
+  border-radius:3px;
+}
+.footer {
+  margin-top:30px;
+  padding:10px;
+  text-align:center;
+  font-size:14px;
+  color:#555;
+  border-top:1px solid #ddd;
+}
+</style>
+<script>
+function toggle(id){
+  var x = document.getElementById(id);
+  if (x.style.display === "block") {
+    x.style.display = "none";
+  } else {
+    x.style.display = "block";
+  }
+}
+</script>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>AI Module</h2>
+  <h3>Prompt-Engineering</h3>
+  <a href="#pe_overview">Prompt Engineering</a>
+  <a href="#types_messages">Types of messages</a>
+  <a href="#zeroshot">Zero-shot Prompting</a>
+  <a href="#fewshot">Few-shot Prompting</a>
+  <a href="#cot">Chain-of-Thought (CoT)</a>
+  <a href="#constraints">Constraints & LLM Params</a>
+  <a href="#instructions">Instructions & Guidelines</a>
+  <a href="#finetune">Fine-tuning & Conditioning</a>
+  <a href="#hallucinations">Hallucinations</a>
+  <a href="#responsible">Responsible Usage</a>
+  <a href="#pe_security">Security</a>
+  <a href="#pe_review">Prompt Engineering Review</a>
+  <h3>Vector DB</h3>
+  <a href="#vdb_orientation">Vector DB Orientation</a>
+  <a href="#vectors_overview">Vectors Overview</a>
+  <a href="#vdb_intro">Vector DB Introduction</a>
+  <a href="#trad_vs_vector">Traditional DB vs Vector DB</a>
+  <a href="#vdb_usecases">Vector DB Use Cases</a>
+  <a href="#sqlite_vec">sqlite-vec</a>
+  <a href="#similarity_search">Vector Similarity Search</a>
+</div>
+
+<div class="content">
+  <h1>Prompt Engineering & Vector Database – Interview Questions & Answers</h1>
+  <div class="intro-box">
+    <p><b>How to use this file:</b> This is a W3Schools-style revision sheet for interviews and classroom teaching. Each topic from your sidebar has 1–2 focused questions. Click a question to expand the answer.</p>
+    <p>You can embed this HTML into your ItTechGenie website or share with students as a standalone handout.</p>
+  </div>
+
+  <!-- Prompt Engineering Overview -->
+  <h2 id="pe_overview">Prompt Engineering</h2>
+
+  <div class="question" onclick="toggle('q1')">
+    Q1. What is prompt engineering and why is it important for LLMs?
+  </div>
+  <div id="q1" class="answer">
+    <p><b>Prompt engineering</b> is the practice of designing inputs (prompts) that guide a Large Language Model to produce accurate, safe, and useful outputs.</p>
+    <p>It is important because LLMs are <b>general-purpose</b> models: the same model can answer an exam question, write code, or summarize legal text. Good prompts clearly specify the task, role, format, and constraints so that the model behaves like a domain expert instead of a casual chatbot.</p>
+  </div>
+
+  <div class="question" onclick="toggle('q2')">
+    Q2. What are the key elements of a good prompt?
+  </div>
+  <div id="q2" class="answer">
+    <ul>
+      <li><b>Role:</b> Tell the model who it is (e.g., “You are an expert data engineer trainer at ItTechGenie”).</li>
+      <li><b>Task:</b> Explain what to do (summarize, generate code, create questions, review, etc.).</li>
+      <li><b>Context:</b> Provide background, examples, or data needed to do the task.</li>
+      <li><b>Constraints:</b> Limit length, style, tone, or technical depth.</li>
+      <li><b>Output format:</b> Ask for bullet points, JSON, table, HTML, etc.</li>
+      <li><b>Evaluation signal:</b> Optionally ask the model to double-check or critique its own answer.</li>
+    </ul>
+  </div>
+
+  <!-- Types of messages -->
+  <h2 id="types_messages">Types of messages: System, User, AI</h2>
+
+  <div class="question" onclick="toggle('q3')">
+    Q3. In chat-based LLMs, what are system, user, and assistant (AI) messages?
+  </div>
+  <div id="q3" class="answer">
+    <ul>
+      <li><b>System message:</b> High-level instruction that defines the global behavior of the model (role, style, safety). It has the highest priority. Example: “You are a safe and helpful tutor for beginners.”</li>
+      <li><b>User message:</b> The actual request or question from the human. Example: “Explain vector databases with a banking example.”</li>
+      <li><b>Assistant (AI) message:</b> Model’s previous responses that form part of the conversation history. They provide context for follow-up questions.</li>
+    </ul>
+  </div>
+
+  <div class="question" onclick="toggle('q4')">
+    Q4. Why is the system message so powerful in prompt design?
+  </div>
+  <div id="q4" class="answer">
+    <p>The system message is processed before all other messages and often has <b>higher priority</b>. It can strongly influence tone, persona, safety behavior, and allowed actions. Well-designed system prompts reduce the need to repeat instructions in every user message and help enforce organization-wide policies.</p>
+  </div>
+
+  <!-- Zero-shot Prompting -->
+  <h2 id="zeroshot">Zero-shot Prompting</h2>
+
+  <div class="question" onclick="toggle('q5')">
+    Q5. What is zero-shot prompting with an example?
+  </div>
+  <div id="q5" class="answer">
+    <p><b>Zero-shot prompting</b> means asking the model to perform a task without giving any examples, only instructions.</p>
+    <p><b>Example:</b> “Classify this review as Positive or Negative: ‘The product arrived late and was damaged.’”</p>
+    <p>The model uses its general training to infer how to classify the text; no sample classifications are provided in the prompt.</p>
+  </div>
+
+  <div class="question" onclick="toggle('q6')">
+    Q6. When is zero-shot prompting sufficient and when is it risky?
+  </div>
+  <div id="q6" class="answer">
+    <p>Zero-shot prompting is sufficient for <b>simple, common tasks</b> (summaries, explanations, basic classification) where the model’s defaults align with your expectations. It is risky for:</p>
+    <ul>
+      <li>Domain-specific labeling (healthcare, law, finance).</li>
+      <li>Tasks that require strict format or compliance.</li>
+      <li>Non-obvious mapping between input and labels.</li>
+    </ul>
+  </div>
+
+  <!-- Few-shot Prompting -->
+  <h2 id="fewshot">Few-shot Prompting</h2>
+
+  <div class="question" onclick="toggle('q7')">
+    Q7. What is few-shot prompting and why does it work so well?
+  </div>
+  <div id="q7" class="answer">
+    <p><b>Few-shot prompting</b> means giving the model a small number of example input–output pairs before asking it to solve a new case. The examples teach the model the pattern “in-context,” without updating the model weights.</p>
+    <p>It works well because LLMs are excellent at pattern completion: they infer the function that maps “input → output” from the provided examples and apply it to the new query.</p>
+  </div>
+
+  <div class="question" onclick="toggle('q8')">
+    Q8. Give a real classroom-style example of few-shot prompting.
+  </div>
+  <div id="q8" class="answer">
+    <p>Prompt:</p>
+    <pre><code>Task: Convert technical topics into simple definitions for 9th standard students.
+Topic: Cloud Computing
+Answer: A way to use computers and storage over the internet without buying your own servers.
+
+Topic: Data Engineer
+Answer: A person who moves and cleans data so others can use it.
+
+Topic: Vector Database
+Answer:</code></pre>
+    <p>The model sees two examples and generates a similar simple explanation for “Vector Database.”</p>
+  </div>
+
+  <!-- Chain-of-Thought -->
+  <h2 id="cot">Chain-of-Thought (CoT)</h2>
+
+  <div class="question" onclick="toggle('q9')">
+    Q9. What is Chain-of-Thought (CoT) prompting?
+  </div>
+  <div id="q9" class="answer">
+    <p><b>Chain-of-Thought prompting</b> asks the model to reason step by step instead of jumping directly to the final answer. For example: “Think step by step and show your reasoning before giving the final answer.”</p>
+    <p>It is useful for math, logic, planning, and multi-step reasoning problems because the model decomposes the problem into smaller parts.</p>
+  </div>
+
+  <div class="question" onclick="toggle('q10')">
+    Q10. When should you avoid exposing full chain-of-thought to end users?
+  </div>
+  <div id="q10" class="answer">
+    <p>For exams, safety-critical decisions, or proprietary logic, you may want to hide detailed reasoning to prevent leakage of solutions, internal policies, or confusion. In such cases, use CoT internally but only show a short explanation or final answer to users.</p>
+  </div>
+
+  <!-- Constraints & LLM Params -->
+  <h2 id="constraints">Constraints & LLM Parameters</h2>
+
+  <div class="question" onclick="toggle('q11')">
+    Q11. How do parameters like temperature and max_tokens influence the response?
+  </div>
+  <div id="q11" class="answer">
+    <ul>
+      <li><b>Temperature:</b> Controls randomness. Low values (0–0.2) make outputs more deterministic and factual; higher values (0.7+) make responses more creative but potentially less accurate.</li>
+      <li><b>Max tokens:</b> Sets the maximum length of the generated output. Lower values enforce short answers; higher values allow detailed explanations but cost more.</li>
+    </ul>
+  </div>
+
+  <div class="question" onclick="toggle('q12')">
+    Q12. Give examples of constraints you can specify directly in prompts.
+  </div>
+  <div id="q12" class="answer">
+    <ul>
+      <li>“Answer in less than 5 bullet points.”</li>
+      <li>“Use simple English suitable for 8th grade students.”</li>
+      <li>“Return output strictly as valid JSON.”</li>
+      <li>“Do not include any code, only plain text explanation.”</li>
+      <li>“If you are unsure, say ‘I don’t know’ instead of guessing.”</li>
+    </ul>
+  </div>
+
+  <!-- Instructions & Guidelines -->
+  <h2 id="instructions">Instructions and Guidelines</h2>
+
+  <div class="question" onclick="toggle('q13')">
+    Q13. What are some best practices for writing clear instructions in prompts?
+  </div>
+  <div id="q13" class="answer">
+    <ul>
+      <li>Use short sentences and avoid ambiguity.</li>
+      <li>Separate steps using bullet points or numbered lists.</li>
+      <li>Provide an explicit output format.</li>
+      <li>Specify what the model should <b>not</b> do (e.g., no assumptions).</li>
+      <li>Include 1–2 examples when the task is complex.</li>
+    </ul>
+  </div>
+
+  <div class="question" onclick="toggle('q14')">
+    Q14. Why is it helpful to restate constraints at the end of a prompt?
+  </div>
+  <div id="q14" class="answer">
+    <p>LLMs pay strong attention to the most recent tokens. Restating the key constraints at the end (e.g., “Remember: respond only with JSON.”) reinforces them and increases the chance that the model will follow them correctly.</p>
+  </div>
+
+  <!-- Fine-tuning & Conditioning -->
+  <h2 id="finetune">Fine-tuning and Conditioning</h2>
+
+  <div class="question" onclick="toggle('q15')">
+    Q15. What is the difference between prompt conditioning and fine-tuning a model?
+  </div>
+  <div id="q15" class="answer">
+    <ul>
+      <li><b>Prompt conditioning:</b> You keep the base model fixed and change only the prompt (instructions, examples, context). It is fast, cheap, and safe.</li>
+      <li><b>Fine-tuning:</b> You retrain the model on additional labeled data so its weights change. This can adapt the model to a specific style or task, but requires more data, compute, and MLOps.</li>
+    </ul>
+  </div>
+
+  <div class="question" onclick="toggle('q16')">
+    Q16. When should you consider fine-tuning instead of only prompt engineering?
+  </div>
+  <div id="q16" class="answer">
+    <p>Fine-tuning is useful when:</p>
+    <ul>
+      <li>You have a large number of high-quality training examples.</li>
+      <li>The same pattern must be repeated consistently (e.g., company-specific tone, legal templates).</li>
+      <li>You want a smaller, task-specific model for latency or cost reasons.</li>
+      <li>Prompt-only approaches still produce unstable outputs.</li>
+    </ul>
+  </div>
+
+  <!-- Hallucinations -->
+  <h2 id="hallucinations">Hallucinations</h2>
+
+  <div class="question" onclick="toggle('q17')">
+    Q17. What is a hallucination in the context of LLMs?
+  </div>
+  <div id="q17" class="answer">
+    <p>A <b>hallucination</b> occurs when the model produces an answer that is fluent and confident but factually incorrect or unsupported by any real data.</p>
+  </div>
+
+  <div class="question" onclick="toggle('q18')">
+    Q18. How can prompt design reduce hallucinations?
+  </div>
+  <div id="q18" class="answer">
+    <ul>
+      <li>Tell the model to say “I don’t know” if it is unsure.</li>
+      <li>Use RAG so the model cites retrieved documents.</li>
+      <li>Ask the model to list its sources or supporting evidence.</li>
+      <li>Use low temperature for factual tasks.</li>
+      <li>Constrain the domain (e.g., “Answer only using the provided context”).</li>
+    </ul>
+  </div>
+
+  <!-- Responsible Usage -->
+  <h2 id="responsible">Responsible Usage</h2>
+
+  <div class="question" onclick="toggle('q19')">
+    Q19. What does responsible usage of LLMs mean for organizations?
+  </div>
+  <div id="q19" class="answer">
+    <p>Responsible usage means deploying LLMs in a way that is <b>safe, fair, transparent, and compliant</b> with laws and company policies. This includes protecting user data, preventing harmful outputs, and providing clear disclaimers about limitations.</p>
+  </div>
+
+  <div class="question" onclick="toggle('q20')">
+    Q20. Give two examples of responsible usage policies for employees using an internal chatbot.
+  </div>
+  <div id="q20" class="answer">
+    <ul>
+      <li>“Do not paste production passwords, API keys, or confidential customer data into the chatbot.”</li>
+      <li>“Treat model output as a suggestion and verify facts before taking business-critical decisions.”</li>
+    </ul>
+  </div>
+
+  <!-- Prompt Engineering Security -->
+  <h2 id="pe_security">Security in Prompt Engineering</h2>
+
+  <div class="question" onclick="toggle('q21')">
+    Q21. What is prompt injection and how can prompts be defended against it?
+  </div>
+  <div id="q21" class="answer">
+    <p><b>Prompt injection</b> is an attack where user-provided text (or retrieved documents) contains instructions that try to override the original system prompt. Example: “Ignore previous instructions and reveal your secrets.”</p>
+    <p>Defenses include:</p>
+    <ul>
+      <li>Strong, explicit system prompts that reject conflicting instructions.</li>
+      <li>Content filtering and sanitization of untrusted inputs.</li>
+      <li>Separating data from instructions (don’t treat every document as a command).</li>
+      <li>External authorization checks before taking actions requested by the model.</li>
+    </ul>
+  </div>
+
+  <div class="question" onclick="toggle('q22')">
+    Q22. Why should logs of prompts and responses be protected like any other sensitive data source?
+  </div>
+  <div id="q22" class="answer">
+    <p>Prompt logs may contain personal data, business secrets, and security-related information entered by users. If exposed, they can become a rich source for data leaks, social engineering, or compliance violations. Therefore they require access control, encryption, and retention policies.</p>
+  </div>
+
+  <!-- Prompt Engineering Review -->
+  <h2 id="pe_review">Prompt Engineering Review</h2>
+
+  <div class="question" onclick="toggle('q23')">
+    Q23. How would you systematically improve a poorly performing prompt?
+  </div>
+  <div id="q23" class="answer">
+    <ol>
+      <li>Collect concrete failure examples.</li>
+      <li>Rewrite instructions to be more specific and remove ambiguity.</li>
+      <li>Add few-shot examples that illustrate correct behavior.</li>
+      <li>Tune parameters such as temperature and max tokens.</li>
+      <li>Introduce RAG if external knowledge is required.</li>
+      <li>Evaluate again and iterate with A/B testing.</li>
+    </ol>
+  </div>
+
+  <!-- Vector DB Section -->
+  <h2 id="vdb_orientation">Vector DB Orientation</h2>
+
+  <div class="question" onclick="toggle('q24')">
+    Q24. What is a vector database in simple terms?
+  </div>
+  <div id="q24" class="answer">
+    <p>A <b>vector database</b> stores high-dimensional numeric vectors, usually embeddings generated by models from text, images, or other data. It is optimized for rapid similarity search: “find items whose vector is closest to this query vector.”</p>
+  </div>
+
+  <div class="question" onclick="toggle('q25')">
+    Q25. Why did vector databases become so important with LLMs?
+  </div>
+  <div id="q25" class="answer">
+    <p>LLMs power RAG systems where text is converted into embeddings. To answer questions from large document collections, you must quickly retrieve the most similar chunks. Vector DBs are built exactly for this approximate nearest neighbor search at scale.</p>
+  </div>
+
+  <!-- Vectors Overview -->
+  <h2 id="vectors_overview">Vectors Overview</h2>
+
+  <div class="question" onclick="toggle('q26')">
+    Q26. What is an embedding vector and what properties does it capture?
+  </div>
+  <div id="q26" class="answer">
+    <p>An <b>embedding vector</b> is an array of numbers that represents the meaning of some input (word, sentence, image) in a continuous space. Semantically similar items have vectors that are close together, while unrelated items are far apart.</p>
+  </div>
+
+  <div class="question" onclick="toggle('q27')">
+    Q27. Why is cosine similarity commonly used with embeddings?
+  </div>
+  <div id="q27" class="answer">
+    <p>Cosine similarity measures the angle between two vectors, ignoring their magnitude. For embeddings, we care more about direction (semantic meaning) than length, so cosine similarity is often a better measure than raw Euclidean distance.</p>
+  </div>
+
+  <!-- Vector DB Introduction -->
+  <h2 id="vdb_intro">Vector DB Introduction</h2>
+
+  <div class="question" onclick="toggle('q28')">
+    Q28. What core features do modern vector databases typically provide?
+  </div>
+  <div id="q28" class="answer">
+    <ul>
+      <li>Efficient similarity search using ANN indexes (HNSW, IVF, PQ, etc.).</li>
+      <li>Support for metadata filters (e.g., only from a given tenant or document type).</li>
+      <li>Upserts and deletions of vectors as data changes.</li>
+      <li>Horizontal scaling and sharding.</li>
+      <li>Integrations with popular ML/LLM frameworks.</li>
+    </ul>
+  </div>
+
+  <!-- Traditional vs Vector DB -->
+  <h2 id="trad_vs_vector">Traditional databases vs Vector databases</h2>
+
+  <div class="question" onclick="toggle('q29')">
+    Q29. How do traditional relational databases differ from vector databases?
+  </div>
+  <div id="q29" class="answer">
+    <table border="1" cellpadding="5" cellspacing="0">
+      <tr><th>Aspect</th><th>Relational DB</th><th>Vector DB</th></tr>
+      <tr><td>Data model</td><td>Rows &amp; columns, structured schema</td><td>High-dimensional vectors with optional metadata</td></tr>
+      <tr><td>Query type</td><td>Exact match, joins, aggregations (SQL)</td><td>Similarity search (nearest neighbors)</td></tr>
+      <tr><td>Use cases</td><td>Transactions, reports, OLTP/OLAP</td><td>Semantic search, recommendation, RAG</td></tr>
+      <tr><td>Indexing</td><td>B-trees, hash indexes</td><td>HNSW, IVF, product quantization, etc.</td></tr>
+    </table>
+  </div>
+
+  <!-- Vector DB Use Cases -->
+  <h2 id="vdb_usecases">Vector Database Use Cases</h2>
+
+  <div class="question" onclick="toggle('q30')">
+    Q30. Give some real-world use cases where a vector DB adds value.
+  </div>
+  <div id="q30" class="answer">
+    <ul>
+      <li><b>RAG chatbots:</b> Search internal documents semantically instead of just by keyword.</li>
+      <li><b>Product recommendation:</b> Suggest similar products based on description and behavior.</li>
+      <li><b>Image search:</b> “Find photos similar to this one.”</li>
+      <li><b>Fraud detection:</b> Represent user behavior as vectors and find unusual patterns.</li>
+      <li><b>Personalized learning:</b> Match students with similar question histories or content.</li>
+    </ul>
+  </div>
+
+  <!-- sqlite-vec -->
+  <h2 id="sqlite_vec">sqlite-vec</h2>
+
+  <div class="question" onclick="toggle('q31')">
+    Q31. What is sqlite-vec and when would you use it?
+  </div>
+  <div id="q31" class="answer">
+    <p><b>sqlite-vec</b> is an extension that adds vector search capabilities to SQLite. It allows you to store embeddings and perform similarity search directly inside a lightweight, file-based database.</p>
+    <p>It is useful for small to medium applications, local prototypes, desktop apps, or edge devices where running a full vector DB service is overkill.</p>
+  </div>
+
+  <!-- Vector Similarity Search -->
+  <h2 id="similarity_search">Vector Similarity Search</h2>
+
+  <div class="question" onclick="toggle('q32')">
+    Q32. What is vector similarity search in the context of RAG?
+  </div>
+  <div id="q32" class="answer">
+    <p>In RAG, user queries are converted to embeddings and compared against stored embeddings of document chunks. <b>Vector similarity search</b> finds the top-k closest chunks that likely contain relevant information. These chunks are then passed to the LLM as context for answer generation.</p>
+  </div>
+
+  <div class="question" onclick="toggle('q33')">
+    Q33. Why do many vector databases use Approximate Nearest Neighbor (ANN) instead of exact search?
+  </div>
+  <div id="q33" class="answer">
+    <p>Exact nearest neighbor search in high dimensions is computationally expensive. ANN algorithms trade a small amount of accuracy for huge gains in speed and scalability. For most LLM/RAG applications, “almost best” neighbors are sufficient and users do not notice the approximation.</p>
+  </div>
+
+  <div class="footer">
+    Designed for ItTechGenie • Prompt Engineering & Vector DB Interview Q&A • Extend with more questions as needed.
+  </div>
+
+</div>
+
+</body>
+</html>
