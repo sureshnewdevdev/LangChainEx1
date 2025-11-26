@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Categorized Interview Questions & Answers</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; line-height: 1.6; margin: 20px; }
+        h1, h2, h3 { color: #1a4a7a; }
+        h1 { border-bottom: 2px solid #1a4a7a; padding-bottom: 5px; }
+        .category { margin-bottom: 30px; }
+        .qa { margin-bottom: 15px; }
+        .question { font-weight: bold; color: #333; }
+        .answer { margin-left: 15px; }
+        ul.toc { list-style: none; padding-left: 0; }
+        ul.toc li { margin-bottom: 5px; }
+        ul.toc a { text-decoration: none; color: #1a4a7a; }
+        ul.toc a:hover { text-decoration: underline; }
+        code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Interview Questions & Answers – Categorized</h1>
+    <p>This HTML file groups all the topics you listed into clear categories, with short, interview-friendly answers.</p>
+
+    <h2>Table of Contents</h2>
+    <ul class="toc">
+        <li><a href="#intro">1. Introduction & General</a></li>
+        <li><a href="#projects-sdlc">2. Projects & SDLC / Behavioural</a></li>
+        <li><a href="#python">3. Python</a></li>
+        <li><a href="#sql">4. SQL</a></li>
+        <li><a href="#genai">5. GenAI, LLMs, Tokenization & RAG</a></li>
+        <li><a href="#cloud">6. Cloud Computing & DevOps</a></li>
+        <li><a href="#python-sql-combined">7. Combined Python + SQL Scenario</a></li>
+    </ul>
+
+    <div class="category" id="intro">
+        <h2>1. Introduction & General</h2>
+
+        <div class="qa">
+            <div class="question">Q1. Give a brief self-introduction.</div>
+            <div class="answer">A. Start with your name, current role or education, overall experience, and strongest skills (Python, SQL, GenAI, Cloud). Then mention 1–2 key projects such as your Data Foundation project and GenAI E-Commerce chatbot, and close with your career goal (e.g., becoming a data/GenAI engineer).</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q2. What are the projects you have done?</div>
+            <div class="answer">A. Mention at least two: (1) a Data Foundation or Multi-Source Retail Data Integration project where you built ETL pipelines and a clean data layer; (2) a GenAI E-Commerce Chatbot project where you used LLMs, vector DB, and RAG for product Q&amp;A. Briefly explain the goal, tech stack, and your role in each.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q3. What do you understand by an algorithm?</div>
+            <div class="answer">A. An algorithm is a finite, step-by-step procedure or set of rules to solve a specific problem or perform a computation. It takes input, applies a sequence of deterministic or probabilistic steps, and produces output.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q4. What do you understand by system architecture?</div>
+            <div class="answer">A. System architecture is the high-level design of a system that defines its components (UI, services, databases, APIs, queues, etc.), their responsibilities, and how they interact. It covers technology choices, data flow, integration points, and non-functional aspects like scalability and security.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q5. Why should we hire you for this role?</div>
+            <div class="answer">A. Connect your skills (Python, SQL, GenAI, Cloud), your project experience (retail data foundation, GenAI chatbot), and your attitude (ownership, continuous learning, communication). Show that you can quickly start contributing to data/AI use cases relevant to their business.</div>
+        </div>
+    </div>
+
+    <div class="category" id="projects-sdlc">
+        <h2>2. Projects &amp; SDLC / Behavioural</h2>
+
+        <h3>2.1 Project Discussion</h3>
+
+        <div class="qa">
+            <div class="question">Q6. Explain your Data Foundation project (Multi-Source Retail Data Integration).</div>
+            <div class="answer">A. Describe sources (POS, CRM, Excel/CSV, web), the ETL or ELT pipeline (ingest &rarr; clean &rarr; transform &rarr; load into a data warehouse or data lake), and the final outputs (sales reports, customer analytics). Highlight tools (Python, SQL, Databricks/ADF/SSIS etc.) and your specific tasks (building pipelines, writing SQL, validating data).</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q7. Explain your GenAI project (E-Commerce Chatbot).</div>
+            <div class="answer">A. Explain that you built a chatbot where user queries are embedded and matched against product or FAQ data in a vector database (e.g., Pinecone/Chroma), then passed to an LLM (GPT/Claude/etc.) using RAG. Mention main features like product search, order FAQs, and the tech stack (Python, LangChain, vector DB, Streamlit/HTML UI).</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q8. How did you use your dataset in your project?</div>
+            <div class="answer">A. For the Data Foundation project, you used the dataset to build dimension and fact tables for retail analytics (sales by store, product, time). For the GenAI project, you converted product catalog and FAQs into embeddings, stored them in a vector store, and retrieved them at query time to ground LLM responses.</div>
+        </div>
+
+        <h3>2.2 SDLC &amp; Scenario-Based Questions</h3>
+
+        <div class="qa">
+            <div class="question">Q9. Which SDLC model would you select to develop a project and why?</div>
+            <div class="answer">A. For data/GenAI projects, Agile or Scrum is usually best because requirements evolve as stakeholders see the data and model behaviour. Short sprints, frequent demos, and iterative improvements help refine metrics, prompts, and pipelines faster than a rigid Waterfall model.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q10. After software deployment, if bugs are reported, how will you fix them?</div>
+            <div class="answer">A. Reproduce the bug, check logs and monitoring, identify root cause, create a small reproducible test case, fix the code or configuration, run unit/regression tests, deploy via proper CI/CD, and communicate clearly with stakeholders about impact and resolution.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q11. How would you explain a complex problem to your teammate?</div>
+            <div class="answer">A. Break the problem into smaller pieces, use simple language and diagrams (data flow, sequence, architecture), relate to a familiar example, and confirm understanding by asking them to restate the solution or walk through a small example themselves.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q12. How can you handle remote communication effectively?</div>
+            <div class="answer">A. Use clear written updates (email/Teams), maintain regular stand-ups, document decisions, over-communicate risks, share screen for live debugging, and use tools like Jira/Trello to track tasks so the team has a single source of truth.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q13. Which tool would you use for communication with your teammates (Gmail, WhatsApp, Teams) and why?</div>
+            <div class="answer">A. For professional work, I prefer Teams/Slack or official email because they support channels, file sharing, and integrated task tracking. WhatsApp is informal and less controlled, so I use it only if the team or client explicitly prefers it.</div>
+        </div>
+
+        <h3>2.3 Teamwork &amp; Conflict Handling</h3>
+
+        <div class="qa">
+            <div class="question">Q14. How do you handle team conflicts?</div>
+            <div class="answer">A. I focus on facts and project goals rather than personal opinions, listen to both sides, clarify misunderstandings, and propose a data-driven or time-boxed experiment. If needed, I escalate to the lead with a solution-oriented mindset.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q15. How do you handle written communication?</div>
+            <div class="answer">A. I keep emails and messages concise, structured with bullet points, mention clear action items and deadlines, and avoid ambiguous language. For important decisions, I always summarize in writing so everyone has the same understanding.</div>
+        </div>
+    </div>
+
+    <div class="category" id="python">
+        <h2>3. Python</h2>
+
+        <h3>3.1 Concepts &amp; Advantages</h3>
+
+        <div class="qa">
+            <div class="question">Q16. Why choose Python over other languages?</div>
+            <div class="answer">A. Python has simple syntax, a huge ecosystem of libraries for data, AI and web (NumPy, Pandas, PyTorch, FastAPI, etc.), and strong community support. It lets you go from prototype to production quickly, which is ideal for data and AI projects.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q17. What is special about Python compared to Java?</div>
+            <div class="answer">A. Python is dynamically typed and interpreted, which speeds up development and experimentation, especially in data science and AI. Java is statically typed and compiled, which can give performance and type safety advantages in large enterprise systems.</div>
+        </div>
+
+        <h3>3.2 Core Syntax &amp; Data Structures</h3>
+
+        <div class="qa">
+            <div class="question">Q18. What is the purpose of comments in Python?</div>
+            <div class="answer">A. Comments (using <code>#</code> or docstrings) explain what the code is doing, making it easier for others (and your future self) to read and maintain. They are ignored by the interpreter.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q19. What is the <code>self</code> keyword in Python?</div>
+            <div class="answer">A. <code>self</code> is a reference to the current instance of a class. It is used inside methods to access instance variables and other methods. It is passed explicitly as the first parameter by convention.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q20. What is a lambda function in Python?</div>
+            <div class="answer">A. A lambda is an anonymous, one-line function defined using the <code>lambda</code> keyword, typically used for short callback functions like <code>sorted(data, key=lambda x: x[1])</code>.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q21. What does <code>yield</code> do in Python?</div>
+            <div class="answer">A. <code>yield</code> turns a function into a generator. Instead of returning all values at once, it yields one value at a time, allowing you to iterate lazily and handle large datasets efficiently.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q22. How do you create a list of 10 numbers in Python?</div>
+            <div class="answer">A. For example: <code>nums = list(range(1, 11))</code> creates a list from 1 to 10. Or <code>nums = [i for i in range(10)]</code> for 0 to 9.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q23. Explain list vs tuple.</div>
+            <div class="answer">A. A list is mutable (you can add/remove/modify elements) and defined with <code>[]</code>. A tuple is immutable (cannot be changed after creation) and defined with <code>()</code>. Tuples are often used for fixed collections of values.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q24. What is the difference between <code>list()</code> and <code>extend()</code>?</div>
+            <div class="answer">A. <code>list()</code> is a constructor used to create a new list, usually from another iterable. <code>extend()</code> is a list method that appends all items from another iterable to an existing list in-place.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q25. What is the difference between a list and a dictionary?</div>
+            <div class="answer">A. A list is an ordered collection indexed by integer positions. A dictionary is an unordered (insertion-ordered in modern Python) collection of key–value pairs, indexed by keys. Use lists for sequences and dictionaries for mapping relations.</div>
+        </div>
+
+        <h3>3.3 Programs &amp; Problem Solving</h3>
+
+        <div class="qa">
+            <div class="question">Q26. Write a Python program to check if a number is an Armstrong number.</div>
+            <div class="answer">A. An Armstrong number is equal to the sum of its own digits each raised to the power of the number of digits. Example logic: convert number to string, compute sum of digit**len(str), and compare with original number.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q27. How would you check if a string is a palindrome in Python?</div>
+            <div class="answer">A. You can compare the string with its reverse: <code>s == s[::-1]</code>. If equal, it is a palindrome.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q28. Swap two numbers without using a temp variable.</div>
+            <div class="answer">A. In Python you can use tuple unpacking: <code>a, b = b, a</code>. This swaps the values without an extra variable.</div>
+        </div>
+
+        <h3>3.4 Testing &amp; Sorting</h3>
+
+        <div class="qa">
+            <div class="question">Q29. What is <code>unittest</code> in Python?</div>
+            <div class="answer">A. <code>unittest</code> is Python&rsquo;s built-in unit testing framework. It provides test case classes, assertions, setup/teardown methods, and test discovery to automate testing.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q30. What are different types of testing you know?</div>
+            <div class="answer">A. Unit testing, integration testing, system testing, regression testing, acceptance testing, and performance testing. In Python projects, unit and integration tests are very common.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q31. How do you perform sorting in Python?</div>
+            <div class="answer">A. You can use the built-in <code>sorted(iterable)</code> which returns a new sorted list or the list method <code>list.sort()</code> which sorts in-place. Both accept a <code>key</code> function and <code>reverse</code> flag.</div>
+        </div>
+    </div>
+
+    <div class="category" id="sql">
+        <h2>4. SQL</h2>
+
+        <h3>4.1 Basics &amp; Commands</h3>
+
+        <div class="qa">
+            <div class="question">Q32. What is SQL and why do we use it?</div>
+            <div class="answer">A. SQL (Structured Query Language) is used to store, manipulate, and retrieve data in relational databases. It provides a standard way to define tables (DDL) and query/update data (DML).</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q33. Why can&rsquo;t we use any other language instead of SQL?</div>
+            <div class="answer">A. You can use ORM or APIs, but internally they still generate SQL for relational databases. SQL is optimized for set-based operations, joins, and aggregations, which are difficult to express efficiently with general-purpose languages alone.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q34. Explain primary key and foreign key.</div>
+            <div class="answer">A. A primary key uniquely identifies each row in a table and cannot be NULL. A foreign key is a column that refers to the primary key of another table, enforcing a relationship between the two tables.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q35. What is referential integrity?</div>
+            <div class="answer">A. Referential integrity ensures that a foreign key value always refers to an existing primary key in the parent table. It prevents orphaned records and keeps relationships consistent.</div>
+        </div>
+
+        <h3>4.2 Data Types &amp; DDL/DML</h3>
+
+        <div class="qa">
+            <div class="question">Q36. Explain <code>char</code>, <code>varchar</code>, and <code>nvarchar</code>.</div>
+            <div class="answer">A. <code>char(n)</code> stores fixed-length strings; it pads shorter values with spaces. <code>varchar(n)</code> stores variable-length strings up to n characters. <code>nvarchar</code> stores Unicode strings for multiple languages.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q37. Explain DELETE, TRUNCATE, and DROP.</div>
+            <div class="answer">A. <strong>DELETE</strong> removes rows one by one and can use a WHERE clause; it can be rolled back. <strong>TRUNCATE</strong> quickly removes all rows from a table and usually cannot be rolled back in all DBs; structure remains. <strong>DROP</strong> removes the entire table (structure and data).</div>
+        </div>
+
+        <h3>4.3 Clauses, Joins &amp; Queries</h3>
+
+        <div class="qa">
+            <div class="question">Q38. What is the difference between WHERE and HAVING?</div>
+            <div class="answer">A. <strong>WHERE</strong> filters rows before grouping; it cannot use aggregate functions. <strong>HAVING</strong> filters groups after aggregation and can use aggregate functions like <code>COUNT</code>, <code>SUM</code>, etc.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q39. Explain different types of joins.</div>
+            <div class="answer">A. INNER JOIN returns matching rows between tables, LEFT JOIN returns all rows from the left with matching right rows (or NULLs), RIGHT JOIN is the opposite, FULL JOIN returns rows that appear in either table, and SELF JOIN joins a table to itself.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q40. What is a self join?</div>
+            <div class="answer">A. A self join is a join of a table with itself, typically using aliases, for hierarchical or comparative queries (e.g., managers and employees in the same table).</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q41. Explain the EXISTS operator and its alternative.</div>
+            <div class="answer">A. <code>EXISTS</code> returns TRUE if the subquery returns at least one row and is often used for semi-joins. An alternative is <code>IN</code> or using joins, although performance may differ depending on the database and query.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q42. How do you find the 2nd highest salary in SQL?</div>
+            <div class="answer">A. One method: <code>SELECT MAX(salary) FROM employees WHERE salary &lt; (SELECT MAX(salary) FROM employees);</code>. Another is using <code>ROW_NUMBER</code> or <code>DENSE_RANK</code> over ordered salaries.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q43. How do you handle NULL values in SQL?</div>
+            <div class="answer">A. Use functions like <code>COALESCE</code> or <code>ISNULL</code>, and be careful with comparisons using <code>IS NULL</code> or <code>IS NOT NULL</code>. Aggregations usually ignore NULLs.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q44. What is the difference between LIMIT and TOP?</div>
+            <div class="answer">A. <code>LIMIT</code> is used in MySQL/PostgreSQL at the end of the query to restrict the number of rows. <code>TOP</code> is used in SQL Server at the beginning of the SELECT, e.g., <code>SELECT TOP 10 *</code>.</div>
+        </div>
+    </div>
+
+    <div class="category" id="genai">
+        <h2>5. GenAI, LLMs, Tokenization &amp; RAG</h2>
+
+        <h3>5.1 Tokenization &amp; Encodings</h3>
+
+        <div class="qa">
+            <div class="question">Q45. What is tokenization in NLP models?</div>
+            <div class="answer">A. Tokenization is the process of converting raw text into smaller units called tokens (words, subwords, or characters) that the model can process. Each token is then mapped to an ID and eventually to an embedding vector.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q46. Will it work if you use the Mistral tokenizer with a LLaMA model?</div>
+            <div class="answer">A. Generally no. Each model is trained with its own tokenizer and vocabulary. Using a mismatched tokenizer will produce token IDs the model was never trained on, leading to poor or undefined behaviour.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q47. What do you mean by encoding in models?</div>
+            <div class="answer">A. Encoding usually refers to converting text into numerical representations (token IDs or embeddings). The encoder part of a model transforms tokens into vectors that capture semantic and contextual information.</div>
+        </div>
+
+        <h3>5.2 Embeddings &amp; Model Training</h3>
+
+        <div class="qa">
+            <div class="question">Q48. What are embedding models and where do you use them?</div>
+            <div class="answer">A. Embedding models map text (or other data) into dense vectors in a semantic space. They are used for semantic search, recommendations, clustering, and as the basis for RAG workflows with vector databases.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q49. What is LoRA (often written as Llora) in fine-tuning?</div>
+            <div class="answer">A. LoRA (Low-Rank Adaptation) is a parameter-efficient fine-tuning technique where small low-rank matrices are learned and added to the original weights instead of updating all model parameters, making fine-tuning cheaper and easier to store.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q50. How do you evaluate your model performance in GenAI projects?</div>
+            <div class="answer">A. Use a mix of automatic metrics (BLEU/ROUGE for text, accuracy for classification), task-specific test sets, human evaluation for quality and helpfulness, and LLM-based evaluators to score correctness, faithfulness, and safety.</div>
+        </div>
+
+        <h3>5.3 RAG &amp; Vector Databases</h3>
+
+        <div class="qa">
+            <div class="question">Q51. What is RAG (Retrieval-Augmented Generation)?</div>
+            <div class="answer">A. RAG is a pattern where an LLM uses external knowledge retrieved from a data source (often a vector database) at query time. The retrieved context is added to the prompt so the model can give grounded, up-to-date answers.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q52. What is a vector database and why is it used?</div>
+            <div class="answer">A. A vector database stores embedding vectors and supports similarity search (nearest neighbour queries). It is used in GenAI to find semantically similar documents or passages to a user query for RAG, recommendations, and clustering.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q53. How are Pinecone and Chroma used in GenAI projects?</div>
+            <div class="answer">A. Pinecone is a managed vector database service; Chroma is an open-source local vector store. Both store embeddings with metadata and expose APIs to perform semantic search, typically used as the retrieval layer in RAG.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q54. What is the difference between vector search and similarity search?</div>
+            <div class="answer">A. In practice, they often mean the same thing: searching by closeness in embedding space. Sometimes vector search refers to using dense vectors in general, while similarity search emphasises the similarity metric (cosine, dot product) used to rank results.</div>
+        </div>
+
+        <h3>5.4 LangChain, Agents &amp; LLM Families</h3>
+
+        <div class="qa">
+            <div class="question">Q55. What is LangChain?</div>
+            <div class="answer">A. LangChain is a framework that provides building blocks to connect LLMs with tools, data sources, and vector stores. It helps you build chains and agents for RAG, question answering, and workflow automation.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q56. What are agents in LangChain?</div>
+            <div class="answer">A. Agents are components that decide which tool or action to take next based on the user input and intermediate results. They use an LLM as a reasoning engine to plan tool calls dynamically.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q57. Claude vs GPT – what are some differences?</div>
+            <div class="answer">A. Both are powerful LLM families. GPT (OpenAI) and Claude (Anthropic) differ in training data, safety alignment, pricing, and context length. Claude is often praised for long-context reasoning and safety, while GPT is widely integrated and strong at coding and general tasks.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q58. What are temperature, top-p, and top-k in LLMs?</div>
+            <div class="answer">A. <strong>Temperature</strong> controls randomness; higher values produce more diverse outputs. <strong>Top-k</strong> limits sampling to the top k most probable tokens. <strong>Top-p</strong> (nucleus sampling) chooses from the smallest set of tokens whose cumulative probability exceeds p.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q59. What is a GAN?</div>
+            <div class="answer">A. A Generative Adversarial Network consists of a generator that creates fake data and a discriminator that tries to distinguish real from fake. Both are trained together, and over time the generator learns to produce realistic outputs.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q60. What is Google Vertex AI?</div>
+            <div class="answer">A. Vertex AI is Google Cloud&rsquo;s unified platform for building, training, and deploying ML and GenAI models. It provides managed notebooks, AutoML, model registry, pipelines, and integration with foundation models.</div>
+        </div>
+    </div>
+
+    <div class="category" id="cloud">
+        <h2>6. Cloud Computing &amp; DevOps</h2>
+
+        <div class="qa">
+            <div class="question">Q61. What is cloud computing?</div>
+            <div class="answer">A. Cloud computing is the on-demand delivery of computing resources (servers, storage, databases, networking, AI services) over the internet with pay-as-you-go pricing, instead of owning physical hardware.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q62. What are common cloud service models?</div>
+            <div class="answer">A. IaaS (infrastructure as a service), PaaS (platform as a service), and SaaS (software as a service). IaaS provides raw compute/storage, PaaS adds managed runtime environments, and SaaS provides ready-to-use applications.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q63. What is a VPC (Virtual Private Cloud)?</div>
+            <div class="answer">A. A VPC is a logically isolated virtual network in the cloud where you can launch resources (VMs, databases) with your own IP range, subnets, route tables, and security groups.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q64. What is a NAT Gateway?</div>
+            <div class="answer">A. A NAT Gateway allows instances in a private subnet to access the internet (for updates or APIs) while preventing the internet from initiating connections to those instances.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q65. Explain elasticity vs scalability.</div>
+            <div class="answer">A. Elasticity is the ability to automatically scale resources up or down based on demand in near real time. Scalability is the capacity of a system to handle increased load by adding resources, either vertically or horizontally.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q66. Object storage vs block storage – give examples.</div>
+            <div class="answer">A. Object storage (e.g., Amazon S3, Azure Blob) stores data as objects in buckets, ideal for unstructured data like logs and images. Block storage (e.g., EBS, Azure Disk) provides raw disk volumes attached to VMs, ideal for databases and file systems.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q67. Azure vs AWS – how would you compare them?</div>
+            <div class="answer">A. Both offer similar core services (compute, storage, databases, AI). AWS is often seen as slightly ahead in breadth of services; Azure integrates deeply with Microsoft tools and enterprise environments. Choice depends on existing ecosystem and customer preferences.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q68. What is cloud security in simple terms?</div>
+            <div class="answer">A. Cloud security covers identity and access management, network security, encryption, monitoring, backup, and compliance. It ensures only authorised users and services can access data and resources.</div>
+        </div>
+    </div>
+
+    <div class="category" id="python-sql-combined">
+        <h2>7. Combined Python + SQL Scenario</h2>
+
+        <div class="qa">
+            <div class="question">Q69. Write an SQL query to select a customer&rsquo;s second purchase date.</div>
+            <div class="answer">A. You can use window functions, for example: use <code>ROW_NUMBER()</code> or <code>DENSE_RANK()</code> partitioned by customer and ordered by purchase date, then filter where rank = 2.</div>
+        </div>
+
+        <div class="qa">
+            <div class="question">Q70. How would you implement the same logic using Python?</div>
+            <div class="answer">A. Load the data into Pandas, sort by customer and date, use <code>groupby</code> and <code>nth(1)</code> (0-based index) to get the second purchase row per customer, or use a custom loop if not using Pandas.</div>
+        </div>
+    </div>
+
+</body>
+</html>

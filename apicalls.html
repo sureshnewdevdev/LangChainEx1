@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Python Server Tutorial - W3Schools Style</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f5f5f5;
+}
+
+h1, h2 {
+  background: #04AA6D;
+  color: white;
+  padding: 12px;
+}
+
+.container {
+  padding: 20px;
+}
+
+.codebox {
+  background: #272822;
+  color: #f8f8f2;
+  padding: 15px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  font-size: 15px;
+}
+
+.note {
+  background: #e7f3fe;
+  border-left: 5px solid #2196F3;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px auto;
+}
+
+table, th, td {
+  border: 1px solid #ddd;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Python Server Tutorial (W3Schools Style)</h1>
+
+<div class="container">
+
+<h2>Introduction</h2>
+<p>This tutorial explains how to create a simple Python server using <b>Flask</b>.  
+You will learn how to handle <b>GET, POST, PUT, DELETE</b> requests just like API servers used in real-time web applications.</p>
+
+<div class="note"><b>Flask</b> is a lightweight Python web framework that allows you to create HTTP APIs easily.</div>
+
+<hr>
+
+<h2>1. Install Flask</h2>
+
+<div class="codebox">
+pip install flask
+</div>
+
+<hr>
+
+<h2>2. Complete Python Server Code</h2>
+
+<p>The below example shows:</p>
+<ul>
+  <li>GET Request</li>
+  <li>GET with Query Parameters</li>
+  <li>POST Request</li>
+  <li>PUT Request</li>
+  <li>DELETE Request</li>
+</ul>
+
+<div class="codebox">
+# -------------------------------------------------------------<br>
+# Import Flask and required modules<br>
+# -------------------------------------------------------------<br>
+from flask import Flask, request, jsonify<br><br>
+
+# -------------------------------------------------------------<br>
+# Create Flask app<br>
+# -------------------------------------------------------------<br>
+app = Flask(__name__)<br><br>
+
+# -------------------------------------------------------------<br>
+# GET Request Example<br>
+# -------------------------------------------------------------<br>
+@app.get("/get-example")<br>
+def get_example():<br>
+    return jsonify({<br>
+        "status": "success",<br>
+        "method": "GET",<br>
+        "message": "This is a GET response"<br>
+    })<br><br>
+
+# -------------------------------------------------------------<br>
+# GET with Query Parameters<br>
+# -------------------------------------------------------------<br>
+@app.get("/user")<br>
+def get_user():<br>
+    user_id = request.args.get("id")<br>
+    user_name = request.args.get("name")<br><br>
+
+    return jsonify({<br>
+        "status": "success",<br>
+        "method": "GET with Query Params",<br>
+        "id": user_id,<br>
+        "name": user_name<br>
+    })<br><br>
+
+# -------------------------------------------------------------<br>
+# POST Request Example<br>
+# -------------------------------------------------------------<br>
+@app.post("/create")<br>
+def create_user():<br>
+    data = request.get_json()  # Read JSON body<br>
+    return jsonify({<br>
+        "status": "success",<br>
+        "method": "POST",<br>
+        "received_data": data<br>
+    })<br><br>
+
+# -------------------------------------------------------------<br>
+# PUT Request Example<br>
+# -------------------------------------------------------------<br>
+@app.put("/update/&lt;int:user_id&gt;")<br>
+def update_user(user_id):<br>
+    update_data = request.get_json()<br>
+    return jsonify({<br>
+        "status": "success",<br>
+        "method": "PUT",<br>
+        "user_id": user_id,<br>
+        "updated_fields": update_data<br>
+    })<br><br>
+
+# -------------------------------------------------------------<br>
+# DELETE Request Example<br>
+# -------------------------------------------------------------<br>
+@app.delete("/delete/&lt;int:user_id&gt;")<br>
+def delete_user(user_id):<br>
+    return jsonify({<br>
+        "status": "success",<br>
+        "method": "DELETE",<br>
+        "deleted_user_id": user_id<br>
+    })<br><br>
+
+# -------------------------------------------------------------<br>
+# Start Server<br>
+# -------------------------------------------------------------<br>
+if __name__ == "__main__":<br>
+    app.run(host="0.0.0.0", port=5000, debug=True)<br>
+</div>
+
+<hr>
+
+<h2>3. Understanding Request Types</h2>
+
+<table>
+<tr>
+  <th>Method</th>
+  <th>Purpose</th>
+  <th>Example</th>
+</tr>
+<tr>
+  <td>GET</td>
+  <td>Fetch data</td>
+  <td>/get-example</td>
+</tr>
+<tr>
+  <td>GET (Query Params)</td>
+  <td>Send data in URL</td>
+  <td>/user?id=1&name=Gopi</td>
+</tr>
+<tr>
+  <td>POST</td>
+  <td>Create data</td>
+  <td>/create</td>
+</tr>
+<tr>
+  <td>PUT</td>
+  <td>Update data</td>
+  <td>/update/10</td>
+</tr>
+<tr>
+  <td>DELETE</td>
+  <td>Delete data</td>
+  <td>/delete/10</td>
+</tr>
+</table>
+
+<hr>
+
+<h2>4. Testing with Postman</h2>
+
+<p><b>POST Request Example:</b></p>
+<div class="codebox">
+URL: http://localhost:5000/create<br><br>
+Body (JSON):<br>
+{<br>
+&nbsp;&nbsp;"name": "Gopi",<br>
+&nbsp;&nbsp;"age": 25<br>
+}
+</div>
+
+<p><b>PUT Request Example:</b></p>
+<div class="codebox">
+URL: http://localhost:5000/update/5<br><br>
+Body (JSON):<br>
+{<br>
+&nbsp;&nbsp;"email": "updated@gmail.com"<br>
+}
+</div>
+
+<p><b>DELETE Request:</b></p>
+<div class="codebox">
+URL: http://localhost:5000/delete/5
+</div>
+
+<hr>
+
+<h2>Conclusion</h2>
+<p>Using Flask, you can build professional APIs for websites, mobile apps, dashboards, and real-time systems.  
+This example covers all essential HTTP request methods with clear explanations and code.</p>
+
+</div>
+</body>
+</html>
