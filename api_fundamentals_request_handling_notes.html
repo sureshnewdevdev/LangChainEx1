@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>API Fundamentals and Request Handling - Detailed Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f7f7fb;
+        color: #222;
+        line-height: 1.6;
+    }
+    header {
+        background: linear-gradient(90deg, #8e24aa, #d81b60);
+        color: #fff;
+        padding: 18px 24px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    header h1 {
+        margin: 0;
+        font-size: 1.6rem;
+    }
+    header p {
+        margin: 4px 0 0 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 24px 16px 40px 16px;
+        background-color: #fff;
+    }
+    h2 {
+        color: #8e24aa;
+        border-bottom: 2px solid #f1e1f6;
+        padding-bottom: 4px;
+        margin-top: 28px;
+    }
+    h3 {
+        color: #d81b60;
+        margin-top: 20px;
+    }
+    pre {
+        background-color: #263238;
+        color: #eceff1;
+        padding: 12px 14px;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-size: 0.85rem;
+    }
+    code {
+        font-family: "Consolas", "Courier New", monospace;
+    }
+    .diagram {
+        background-color: #fafafa;
+        border: 1px dashed #bdbdbd;
+        padding: 10px 12px;
+        border-radius: 4px;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.85rem;
+        white-space: pre;
+        overflow-x: auto;
+        margin: 10px 0 16px 0;
+    }
+    .note-box {
+        border-left: 4px solid #ffb300;
+        background-color: #fff8e1;
+        padding: 8px 12px;
+        margin: 12px 0;
+        font-size: 0.9rem;
+    }
+    ul, ol {
+        margin-left: 22px;
+    }
+</style>
+</head>
+<body>
+<header>
+  <h1>API Fundamentals and Request Handling</h1>
+  <p>Deep trainer notes with examples for each topic.</p>
+</header>
+<main>
+
+<h2>1. Core API Concepts</h2>
+
+<h3>1.1 What is an API?</h3>
+<p><strong>API (Application Programming Interface)</strong> is a contract that defines how two programs can talk. You send a <strong>request</strong> to the API, it processes it and sends back a <strong>response</strong>. This is used everywhere: mobile apps, websites, microservices, AI systems, etc.</p>
+<div class="note-box">
+<strong>Analogy:</strong> You at a restaurant &rarr; waiter (API) &rarr; kitchen (server). You tell the waiter what you want &rarr; waiter talks to kitchen &rarr; waiter brings back the food.
+</div>
+
+<h3>1.2 Client vs Server</h3>
+<ul>
+<li><strong>Client</strong>: sends the request (browser, mobile app, Python script).</li>
+<li><strong>Server</strong>: receives the request and returns the response (backend service).</li>
+</ul>
+<div class="diagram">
+Python script  --(HTTP request)-->  Weather API server
+Python script  <--(HTTP response)--  Weather API server
+</div>
+
+<h3>1.3 Base URL, Endpoint and Resource</h3>
+<ul>
+<li><strong>Base URL</strong>: common prefix for all endpoints. Example: <code>https://api.example.com</code></li>
+<li><strong>Endpoint</strong>: specific path for an operation. Example: <code>/v1/users</code>, <code>/v1/orders/123</code></li>
+<li><strong>Resource</strong>: object that API exposes (user, order, product).</li>
+</ul>
+<div class="diagram">
+Full URL = Base URL + Endpoint
+
+https://api.example.com + /v1/users/10
+= https://api.example.com/v1/users/10
+</div>
+
+<h3>1.4 Headers, Body, and Parameters</h3>
+<ul>
+<li><strong>Headers</strong>: extra info like content type and auth.</li>
+</ul>
+<pre><code>Content-Type: application/json
+Authorization: Bearer &lt;token&gt;</code></pre>
+<ul>
+<li><strong>Body</strong>: main data you send in POST/PUT requests (JSON/form-data).</li>
+<li><strong>Parameters</strong>:
+  <ul>
+    <li><strong>Path params</strong>: part of URL &rarr; <code>/users/{id}</code> e.g. <code>/users/10</code></li>
+    <li><strong>Query params</strong>: after <code>?</code> in URL &rarr; <code>?page=2&amp;limit=20</code></li>
+  </ul>
+</li>
+</ul>
+
+<h3>1.5 Status Codes</h3>
+<p>Common HTTP status codes:</p>
+<ul>
+<li><strong>200 OK</strong> &ndash; Successful GET.</li>
+<li><strong>201 Created</strong> &ndash; Successful POST (new resource).</li>
+<li><strong>400 Bad Request</strong> &ndash; Input validation error.</li>
+<li><strong>401 Unauthorized</strong> &ndash; Missing/invalid token.</li>
+<li><strong>403 Forbidden</strong> &ndash; No permission.</li>
+<li><strong>404 Not Found</strong> &ndash; Resource doesn’t exist.</li>
+<li><strong>429 Too Many Requests</strong> &ndash; Rate limit exceeded.</li>
+<li><strong>500 Internal Server Error</strong> &ndash; Bug / crash on server.</li>
+</ul>
+
+<h3>1.6 Python example: basic GET with concepts</h3>
+<pre><code>import requests
+
+base_url = "https://jsonplaceholder.typicode.com"
+endpoint = "/posts"
+url = base_url + endpoint
+
+params = {"userId": 1}                    # query params
+headers = {"Accept": "application/json"}  # headers
+
+response = requests.get(url, params=params, headers=headers)
+
+print("Final URL:", response.url)
+print("Status:", response.status_code)
+print("Headers:", response.headers["Content-Type"])
+print("Body sample:", response.json()[0])</code></pre>
+
+<h2>2. REST API Architecture</h2>
+
+<h3>2.1 REST in simple words</h3>
+<p><strong>REST = style of designing web APIs</strong> based on HTTP.</p>
+<ul>
+<li><strong>Client&ndash;Server separation</strong>: UI and backend are separate.</li>
+<li><strong>Stateless</strong>: each request carries all required information.</li>
+<li><strong>Uniform interface</strong>: use standard HTTP methods and status codes.</li>
+<li><strong>Resource-based</strong>: URLs represent resources, not actions.</li>
+<li><strong>Cacheable</strong>: responses can be cached where appropriate.</li>
+</ul>
+
+<h3>2.2 Example RESTful API design (Books)</h3>
+<ul>
+<li><code>GET /books</code> &ndash; list all books.</li>
+<li><code>GET /books/5</code> &ndash; get book 5.</li>
+<li><code>POST /books</code> &ndash; add new book.</li>
+<li><code>PUT /books/5</code> &ndash; replace book 5.</li>
+<li><code>DELETE /books/5</code> &ndash; delete book 5.</li>
+</ul>
+
+<h3>2.3 Example: calling REST API in Python</h3>
+<pre><code>import requests
+
+# Get all books
+resp = requests.get("https://example.com/api/books")
+print(resp.status_code)
+print(resp.json())
+
+# Add a new book
+new_book = {"title": "LangChain for Beginners", "author": "ItTechGenie"}
+resp = requests.post("https://example.com/api/books", json=new_book)
+print("Created:", resp.status_code, resp.json())</code></pre>
+
+<h2>3. HTTP Methods (GET, POST, PUT, DELETE)</h2>
+
+<h3>3.1 GET &ndash; Read data</h3>
+<ul>
+<li>Use when you want to fetch or search data.</li>
+<li>Idempotent &ndash; calling it many times doesn’t change data.</li>
+</ul>
+<pre><code>import requests
+
+resp = requests.get("https://jsonplaceholder.typicode.com/posts/1")
+print(resp.json())</code></pre>
+
+<h3>3.2 POST &ndash; Create new data</h3>
+<ul>
+<li>Use when you want to create a new record.</li>
+<li>Not idempotent &ndash; calling twice may create two records.</li>
+</ul>
+<pre><code>import requests
+
+url = "https://jsonplaceholder.typicode.com/posts"
+payload = {"title": "New Post", "body": "Hello API", "userId": 1}
+
+resp = requests.post(url, json=payload)
+print(resp.status_code)    # 201 Created (in real APIs)
+print(resp.json())</code></pre>
+
+<h3>3.3 PUT &ndash; Replace existing data</h3>
+<pre><code>import requests
+
+url = "https://jsonplaceholder.typicode.com/posts/1"
+payload = {"id": 1, "title": "Updated", "body": "New body", "userId": 1}
+
+resp = requests.put(url, json=payload)
+print(resp.status_code)
+print(resp.json())</code></pre>
+
+<h3>3.4 PATCH &ndash; Partial update</h3>
+<pre><code>import requests
+
+url = "https://jsonplaceholder.typicode.com/posts/1"
+payload = {"title": "Only Title Updated"}
+
+resp = requests.patch(url, json=payload)
+print(resp.status_code)
+print(resp.json())</code></pre>
+
+<h3>3.5 DELETE &ndash; Remove data</h3>
+<pre><code>import requests
+
+resp = requests.delete("https://jsonplaceholder.typicode.com/posts/1")
+print(resp.status_code)    # often 200 or 204</code></pre>
+
+<h2>4. Authentication Mechanisms</h2>
+
+<h3>4.1 Why authentication?</h3>
+<ul>
+<li>Protects data.</li>
+<li>Ensures only authorized users/apps can call certain endpoints.</li>
+</ul>
+
+<h3>4.2 API Key</h3>
+<pre><code>import requests
+
+url = "https://api.example.com/secure-data"
+headers = {"X-API-KEY": "YOUR_SECRET_KEY"}
+
+resp = requests.get(url, headers=headers)
+print(resp.status_code)</code></pre>
+
+<h3>4.3 Basic Authentication (username + password)</h3>
+<pre><code>import requests
+
+resp = requests.get(
+    "https://api.example.com/user-profile",
+    auth=("myusername", "mypassword")
+)
+print(resp.status_code)</code></pre>
+
+<h3>4.4 Bearer Token / JWT</h3>
+<pre><code>import requests
+
+token = "eyJhbGciOi..."  # example JWT
+headers = {"Authorization": f"Bearer {token}"}
+
+resp = requests.get("https://api.example.com/dashboard", headers=headers)
+print(resp.status_code)</code></pre>
+
+<h3>4.5 High-level view of OAuth 2.0</h3>
+<p>User logs in via Google/Microsoft, your app receives an access token, and you call APIs with this token in the <code>Authorization</code> header.</p>
+
+<h2>5. API Request/Response Cycle</h2>
+
+<h3>5.1 Step-by-step story</h3>
+<ol>
+<li>Client constructs request (method, URL, headers, body).</li>
+<li>Client sends request over network using HTTP/HTTPS.</li>
+<li>Server receives request, routes to correct handler.</li>
+<li>Server processes: validates auth/input, does business logic.</li>
+<li>Server builds response: status code, headers, body.</li>
+<li>Client receives response, checks status, parses body.</li>
+</ol>
+
+<div class="diagram">
+Python client  →  HTTP request  →  API server
+Python client  ←  HTTP response ←  API server
+</div>
+
+<h3>5.2 Example with print</h3>
+<pre><code>import requests
+
+url = "https://jsonplaceholder.typicode.com/posts"
+params = {"userId": 1}
+
+print("→ Sending GET", url, "with params", params)
+resp = requests.get(url, params=params)
+print("← Status:", resp.status_code)
+print("← First item:", resp.json()[0])</code></pre>
+
+<h2>6. Python API Libraries</h2>
+
+<h3>6.1 Common libraries</h3>
+<ul>
+<li><strong>requests</strong> &ndash; synchronous, simple, perfect for demos.</li>
+<li><strong>httpx</strong> &ndash; sync + async, modern alternative.</li>
+<li><strong>aiohttp</strong> &ndash; async HTTP client/server.</li>
+<li><strong>urllib</strong> &ndash; built-in, but lower-level.</li>
+</ul>
+
+<h3>6.2 Example: httpx vs requests</h3>
+<pre><code># requests
+import requests
+r = requests.get("https://jsonplaceholder.typicode.com/posts/1")
+print("requests:", r.status_code)
+
+# httpx (sync mode)
+import httpx
+r2 = httpx.get("https://jsonplaceholder.typicode.com/posts/1")
+print("httpx:", r2.status_code)</code></pre>
+
+<h2>7. requests Library In-Depth</h2>
+
+<h3>7.1 Installing</h3>
+<pre><code>pip install requests</code></pre>
+
+<h3>7.2 Using Sessions (reuse connection + headers)</h3>
+<pre><code>import requests
+
+session = requests.Session()
+session.headers.update({"Authorization": "Bearer TOKEN"})
+
+# First call
+r1 = session.get("https://jsonplaceholder.typicode.com/posts/1")
+# Second call with same headers + connection reused
+r2 = session.get("https://jsonplaceholder.typicode.com/posts/2")
+
+print(r1.status_code, r2.status_code)</code></pre>
+
+<h3>7.3 Timeouts</h3>
+<pre><code>import requests
+
+try:
+    r = requests.get("https://httpbin.org/delay/3", timeout=1)
+    print("Success:", r.status_code)
+except requests.exceptions.Timeout:
+    print("Request took too long!")</code></pre>
+
+<h3>7.4 File upload example</h3>
+<pre><code>import requests
+
+url = "https://httpbin.org/post"   # demo endpoint
+files = {"file": ("example.txt", b"Hello from ItTechGenie!")}
+resp = requests.post(url, files=files)
+print(resp.json()["files"])</code></pre>
+
+<h3>7.5 Sending form data example</h3>
+<pre><code>import requests
+
+url = "https://httpbin.org/post"
+data = {"username": "gopi", "password": "secret"}
+resp = requests.post(url, data=data)
+print(resp.json()["form"])</code></pre>
+
+<h2>8. https for Secure API Calls</h2>
+
+<h3>8.1 Why HTTPS matters</h3>
+<ul>
+<li>Encrypts data between client and server.</li>
+<li>Prevents attackers from reading tokens/passwords.</li>
+<li>Verifies identity of the server using certificates.</li>
+</ul>
+
+<h3>8.2 HTTPS example</h3>
+<pre><code>import requests
+
+resp = requests.get("https://jsonplaceholder.typicode.com/posts/1")  # secure
+print(resp.status_code)</code></pre>
+
+<h3>8.3 Avoid verify=False (debug-only)</h3>
+<pre><code>import requests
+
+# NOT recommended for production
+resp = requests.get("https://expired.badssl.com/", verify=False)
+print(resp.status_code)</code></pre>
+
+<h2>9. Error Handling</h2>
+
+<h3>9.1 Types of errors</h3>
+<ul>
+<li>Client-side: wrong URL, parameters, parsing.</li>
+<li>Network: no internet, DNS failure, timeout.</li>
+<li>Server-side: 5xx, permission problems, invalid token.</li>
+</ul>
+
+<h3>9.2 Using raise_for_status</h3>
+<pre><code>import requests
+
+resp = requests.get("https://jsonplaceholder.typicode.com/posts/100000")
+try:
+    resp.raise_for_status()
+except requests.exceptions.HTTPError as e:
+    print("HTTP error:", e)
+else:
+    print("Success:", resp.json())</code></pre>
+
+<h3>9.3 Full pattern with try/except</h3>
+<pre><code>import requests
+from requests.exceptions import RequestException, Timeout
+
+def fetch_with_handling(url):
+    try:
+        resp = requests.get(url, timeout=3)
+        resp.raise_for_status()
+    except Timeout:
+        print("⏰ Timeout while calling:", url)
+        return None
+    except RequestException as e:
+        print("❌ Request failed:", e)
+        return None
+    else:
+        return resp.json()
+
+data = fetch_with_handling("https://jsonplaceholder.typicode.com/posts/1")
+print("Data:", data)</code></pre>
+
+<h3>9.4 Converting to HTTP errors in a backend</h3>
+<pre><code>from fastapi import FastAPI, HTTPException
+import requests
+
+app = FastAPI()
+
+@app.get("/proxy")
+def proxy():
+    try:
+        r = requests.get("https://jsonplaceholder.typicode.com/posts/1", timeout=2)
+        r.raise_for_status()
+    except requests.exceptions.Timeout:
+        raise HTTPException(status_code=504, detail="Upstream timeout")
+    except requests.exceptions.RequestException:
+        raise HTTPException(status_code=502, detail="Upstream error")
+    return r.json()</code></pre>
+
+<h2>10. Rate Limiting Strategies</h2>
+
+<h3>10.1 What is rate limiting?</h3>
+<p>The API restricts how many requests you can send in a time window (for example, 60 requests per minute). If you exceed it, you get HTTP <strong>429 Too Many Requests</strong>.</p>
+
+<h3>10.2 Reading rate-limit headers</h3>
+<pre><code>import requests
+
+resp = requests.get("https://api.github.com/users/octocat")
+print("Limit:", resp.headers.get("X-RateLimit-Limit"))
+print("Remaining:", resp.headers.get("X-RateLimit-Remaining"))</code></pre>
+
+<h3>10.3 Simple "sleep between calls" strategy</h3>
+<pre><code>import time
+import requests
+
+for i in range(5):
+    resp = requests.get("https://jsonplaceholder.typicode.com/posts/1")
+    print(i, resp.status_code)
+    time.sleep(1)  # wait 1 sec between calls</code></pre>
+
+<h3>10.4 Exponential backoff on 429</h3>
+<pre><code>import time
+import requests
+
+def safe_get(url, max_retries=3):
+    for attempt in range(max_retries):
+        resp = requests.get(url)
+        if resp.status_code == 429:
+            wait = 2 ** attempt       # 1s, 2s, 4s...
+            print(f"Rate limited. Waiting {wait} seconds...")
+            time.sleep(wait)
+            continue
+        return resp
+    raise RuntimeError("Max retries reached")
+
+resp = safe_get("https://api.github.com/users/octocat")
+print(resp.status_code)</code></pre>
+
+<h3>10.5 Practical tips</h3>
+<ul>
+<li>Log how many times you call an API.</li>
+<li>Cache results where possible.</li>
+<li>Use bulk endpoints instead of many single calls.</li>
+<li>Always consider retry + backoff when building production systems.</li>
+</ul>
+
+</main>
+</body>
+</html>
