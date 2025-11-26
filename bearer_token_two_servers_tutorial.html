@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bearer Token Demo with Two Python Servers and HTML UIs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #f7f7fb;
+    color: #222;
+    line-height: 1.6;
+  }
+  header {
+    background: linear-gradient(90deg, #8e24aa, #d81b60);
+    color: #fff;
+    padding: 18px 24px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.6rem;
+  }
+  header p {
+    margin: 4px 0 0 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px 40px 16px;
+    background-color: #fff;
+  }
+  h2 {
+    color: #8e24aa;
+    border-bottom: 2px solid #f1e1f6;
+    padding-bottom: 4px;
+    margin-top: 28px;
+  }
+  h3 {
+    color: #d81b60;
+    margin-top: 20px;
+  }
+  pre {
+    background-color: #263238;
+    color: #eceff1;
+    padding: 12px 14px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+  }
+  code {
+    font-family: "Consolas", "Courier New", monospace;
+  }
+  ul, ol {
+    margin-left: 22px;
+  }
+  .diagram {
+    background-color: #fafafa;
+    border: 1px dashed #bdbdbd;
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.85rem;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 10px 0 16px 0;
+  }
+  .note-box {
+    border-left: 4px solid #ffb300;
+    background-color: #fff8e1;
+    padding: 8px 12px;
+    margin: 12px 0;
+    font-size: 0.9rem;
+  }
+  .step-title {
+    font-weight: 600;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Bearer Token Example with Python &amp; UI (Two Servers)</h1>
+  <p>One server and HTML page to create the token, another server and HTML page to access a protected API using that token.</p>
+</header>
+<main>
+
+<h2>1. Goal of this Mini Project</h2>
+<p>In this tutorial you will build a tiny but very clear example of how a <strong>Bearer token</strong> works.</p>
+<p>We will create:</p>
+<ul>
+  <li><strong>Auth Server (Server 1)</strong> – issues a signed token when the user logs in using username + password.</li>
+  <li><strong>Service Server (Server 2)</strong> – exposes a protected API that can be accessed only when a valid Bearer token is sent.</li>
+  <li><strong>auth.html</strong> – web page that calls the Auth Server, gets the token and displays it.</li>
+  <li><strong>service.html</strong> – web page that takes the token, sends it as <code>Authorization: Bearer &lt;token&gt;</code> and shows the protected data.</li>
+</ul>
+
+<div class="diagram">
++---------------------+          +----------------------+
+|  Auth Server        |          |  Service Server      |
+|  (localhost:5000)   |          |  (localhost:5001)    |
+|   - / (auth.html)   |          |   - / (service.html) |
+|   - /create-token   |          |   - /api/secret      |
++----------+----------+          +----------+-----------+
+           |                                ^
+           | 1. POST username/password      |
+           |                                |
+           v                                |
+   [ token returned as JSON ]               |
+           |                                |
+           | 2. Paste token                 |
+           +------------------------------->|
+                            3. GET /api/secret with
+                               Authorization: Bearer &lt;token&gt;
+</div>
+
+<h2>2. What is a Bearer Token?</h2>
+<p>A <strong>Bearer token</strong> is a string that represents the identity and permissions of a user or client.</p>
+<ul>
+  <li>You send it in the HTTP header: <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+  <li>The server verifies the token (for example by checking its signature) and, if valid, allows access.</li>
+  <li>Whoever "bears" (holds) the token is treated as the authenticated user.</li>
+</ul>
+
+<p>In this example we will implement the token as a <strong>JWT (JSON Web Token)</strong> using the <code>PyJWT</code> library and a shared secret key.</p>
+
+<h2>3. Folder Structure</h2>
+<p>Create a folder for this mini project (for example <code>BearerTokenDemo</code>) and inside it create the files as shown below:</p>
+
+<div class="diagram">
+BearerTokenDemo/
+├─ auth_server.py      # Python auth server (issues token)
+├─ service_server.py   # Python service server (checks token)
+├─ auth.html           # UI for logging in and getting token
+└─ service.html        # UI for calling protected API with token
+</div>
+
+<h2>4. Environment Setup</h2>
+
+<div class="step-title">Step 1: Create and activate a virtual environment (optional but recommended)</div>
+<pre><code>cd path/to/BearerTokenDemo
+
+# Windows (PowerShell)
+python -m venv .venv
+.venv\Scripts\activate
+
+# Linux / macOS
+# python3 -m venv .venv
+# source .venv/bin/activate</code></pre>
+
+<div class="step-title">Step 2: Install required packages</div>
+<p>We need <strong>Flask</strong> (for the servers) and <strong>PyJWT</strong> (for tokens).</p>
+<pre><code>pip install flask PyJWT</code></pre>
+
+<h2>5. Auth Server (Server 1) – auth_server.py</h2>
+
+<h3>5.1 Code</h3>
+<pre><code>from datetime import datetime, timedelta
+import jwt
+from flask import Flask, request, jsonify, send_from_directory
+
+app = Flask(__name__)
+
+# Secret key used to sign our JWT tokens.
+# In real systems this MUST be stored securely (env variable, key vault, etc.)
+SECRET_KEY = "MY_SUPER_SECRET_KEY_FOR_DEMO_ONLY"
+
+
+@app.route("/")
+def serve_auth_page():
+    # Serve the auth.html file as the home page.
+    return send_from_directory(".", "auth.html")
+
+
+@app.route("/create-token", methods=["POST"])
+def create_token():
+    # Validate username/password and create a JWT bearer token.
+    data = request.get_json()
+
+    username = data.get("username")
+    password = data.get("password")
+
+    # 1. Very simple hard-coded check (for demo)
+    if username != "admin" or password != "secret":
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    # 2. Build token payload (claims)
+    payload = {
+        "sub": username,                           # subject (who the token represents)
+        "role": "demo-user",                       # custom claim
+        "exp": datetime.utcnow() + timedelta(minutes=15),  # expiry time (15 min)
+        "iat": datetime.utcnow()                   # issued-at time
+    }
+
+    # 3. Create signed JWT using HS256 algorithm
+    token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+    # 4. Return JSON with token
+    return jsonify({
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_in_minutes": 15
+    })
+
+
+if __name__ == "__main__":
+    # Run Auth Server on port 5000
+    app.run(host="127.0.0.1", port=5000, debug=True)</code></pre>
+
+<h3>5.2 Line-by-line Explanation</h3>
+<ul>
+  <li><code>SECRET_KEY</code> – shared secret used to sign and verify tokens.</li>
+  <li><code>serve_auth_page()</code> – serves the <code>auth.html</code> file as the UI for login.</li>
+  <li><code>/create-token</code> – POST endpoint that:
+    <ul>
+      <li>Reads <code>username</code> and <code>password</code> from JSON body.</li>
+      <li>Performs a very simple check (hard-coded <code>admin/secret</code>).</li>
+      <li>If valid, builds a JWT payload with subject (<code>sub</code>), role and expiry time.</li>
+      <li>Encodes it with <code>jwt.encode(...)</code> to create the token string.</li>
+      <li>Returns JSON with <code>access_token</code> and meta data.</li>
+    </ul>
+  </li>
+  <li><code>app.run(...)</code> – starts the Flask development server on <code>http://127.0.0.1:5000</code>.</li>
+</ul>
+
+<h2>6. Service Server (Server 2) – service_server.py</h2>
+
+<h3>6.1 Code</h3>
+<pre><code>import jwt
+from jwt import InvalidTokenError, ExpiredSignatureError
+from flask import Flask, request, jsonify, send_from_directory
+
+app = Flask(__name__)
+
+# Same secret as auth_server.py (shared between both services)
+SECRET_KEY = "MY_SUPER_SECRET_KEY_FOR_DEMO_ONLY"
+
+
+@app.route("/")
+def serve_service_page():
+    # Serve the service.html file as the home page.
+    return send_from_directory(".", "service.html")
+
+
+def verify_token(auth_header: str):
+    # Extract token from 'Authorization: Bearer &lt;token&gt;' and verify it.
+    if not auth_header:
+        return None, "Missing Authorization header"
+
+    if not auth_header.startswith("Bearer "):
+        return None, "Invalid header format. Use 'Bearer &lt;token&gt;'."
+
+    token = auth_header.split(" ", 1)[1].strip()
+
+    try:
+        # Decode and verify signature + expiry
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return payload, None
+    except ExpiredSignatureError:
+        return None, "Token has expired"
+    except InvalidTokenError:
+        return None, "Token is invalid"
+
+
+@app.route("/api/secret", methods=["GET"])
+def secret_api():
+    # Protected endpoint that requires a valid bearer token.
+    auth_header = request.headers.get("Authorization")
+    payload, error = verify_token(auth_header)
+
+    if error is not None:
+        return jsonify({"error": error}), 401
+
+    # If token is valid, we can access claims like payload["sub"]
+    username = payload.get("sub", "unknown")
+
+    return jsonify({
+        "message": "This is protected data only for authenticated users.",
+        "user": username,
+        "role": payload.get("role"),
+    })
+
+
+if __name__ == "__main__":
+    # Run Service Server on port 5001
+    app.run(host="127.0.0.1", port=5001, debug=True)</code></pre>
+
+<h3>6.2 Explanation</h3>
+<ul>
+  <li><code>SECRET_KEY</code> is the same as in the auth server so that the token signature can be verified.</li>
+  <li><code>serve_service_page()</code> serves the UI page that will call the protected API.</li>
+  <li><code>verify_token()</code>:
+    <ul>
+      <li>Checks that the header is present and begins with <code>Bearer </code>.</li>
+      <li>Extracts the token string.</li>
+      <li>Uses <code>jwt.decode()</code> to verify signature and expiry.</li>
+      <li>Returns payload on success or error message otherwise.</li>
+    </ul>
+  </li>
+  <li><code>/api/secret</code>:
+    <ul>
+      <li>Reads <code>Authorization</code> header.</li>
+      <li>Calls <code>verify_token</code>.</li>
+      <li>If invalid, returns 401 with error JSON.</li>
+      <li>If valid, responds with a JSON message containing secret data and the username from payload.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>7. UI 1 – auth.html (Create Token Page)</h2>
+
+<h3>7.1 Code</h3>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;Auth Server - Create Token&lt;/title&gt;
+  &lt;style&gt;
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    label { display: block; margin-top: 10px; }
+    input { padding: 6px; width: 220px; }
+    button { margin-top: 12px; padding: 6px 12px; }
+    #result { margin-top: 16px; padding: 10px; border: 1px solid #ccc; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h2&gt;Auth Server - Create Bearer Token&lt;/h2&gt;
+
+  &lt;label&gt;Username:&lt;/label&gt;
+  &lt;input type="text" id="username" value="admin"&gt;
+
+  &lt;label&gt;Password:&lt;/label&gt;
+  &lt;input type="password" id="password" value="secret"&gt;
+
+  &lt;br&gt;
+  &lt;button onclick="createToken()"&gt;Create Token&lt;/button&gt;
+
+  &lt;div id="result"&gt;
+    &lt;strong&gt;Response:&lt;/strong&gt;
+    &lt;pre id="responseText"&gt;(token will appear here)&lt;/pre&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    async function createToken() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const responseElement = document.getElementById("responseText");
+      responseElement.textContent = "Calling /create-token ...";
+
+      try {
+        const res = await fetch("/create-token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          responseElement.textContent = JSON.stringify(data, null, 2);
+        } else {
+          responseElement.textContent = "Error: " + JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        responseElement.textContent = "Network error: " + err;
+      }
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<h3>7.2 Explanation</h3>
+<ul>
+  <li>Simple HTML form with <code>username</code> and <code>password</code> (pre-filled with <code>admin/secret</code>).</li>
+  <li><code>createToken()</code>:
+    <ul>
+      <li>Sends a POST request to <code>/create-token</code> with JSON body.</li>
+      <li>Waits for response and prints JSON in a <code>&lt;pre&gt;</code> block.</li>
+      <li>If login is correct, you will see JSON with <code>access_token</code>, <code>token_type</code>, and <code>expires_in_minutes</code>.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>8. UI 2 – service.html (Protected Service Page)</h2>
+
+<h3>8.1 Code</h3>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;Service Server - Use Token&lt;/title&gt;
+  &lt;style&gt;
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    label { display: block; margin-top: 10px; }
+    textarea { width: 100%; height: 80px; }
+    button { margin-top: 12px; padding: 6px 12px; }
+    #result { margin-top: 16px; padding: 10px; border: 1px solid #ccc; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h2&gt;Service Server - Call Protected API&lt;/h2&gt;
+
+  &lt;p&gt;Paste the &lt;code&gt;access_token&lt;/code&gt; you got from the Auth Server below.&lt;/p&gt;
+
+  &lt;label&gt;Bearer Token:&lt;/label&gt;
+  &lt;textarea id="token"&gt;&lt;/textarea&gt;
+
+  &lt;button onclick="callApi()"&gt;Call /api/secret&lt;/button&gt;
+
+  &lt;div id="result"&gt;
+    &lt;strong&gt;Response:&lt;/strong&gt;
+    &lt;pre id="responseText"&gt;(API response will appear here)&lt;/pre&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    async function callApi() {
+      const token = document.getElementById("token").value.trim();
+      const responseElement = document.getElementById("responseText");
+      responseElement.textContent = "Calling /api/secret ...";
+
+      try {
+        const res = await fetch("/api/secret", {
+          method: "GET",
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          responseElement.textContent = JSON.stringify(data, null, 2);
+        } else {
+          responseElement.textContent = "Error: " + JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        responseElement.textContent = "Network error: " + err;
+      }
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<h3>8.2 Explanation</h3>
+<ul>
+  <li>Text area to paste the Bearer token from the auth page.</li>
+  <li>When you click the button:
+    <ul>
+      <li>Front-end sends a GET request to <code>/api/secret</code>.</li>
+      <li>It sets the HTTP header: <code>Authorization: Bearer &lt;your token&gt;</code>.</li>
+      <li>The service server verifies the token and returns either protected data or an error.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>9. Step-by-Step: How to Run and Test</h2>
+
+<div class="step-title">Step 1: Start the Auth Server</div>
+<pre><code>cd path/to/BearerTokenDemo
+# Activate venv if you created one
+# Windows: .venv\Scripts\activate
+python auth_server.py</code></pre>
+
+<div class="step-title">Step 2: Start the Service Server</div>
+<pre><code># In another terminal window, same folder
+# Activate the same venv
+python service_server.py</code></pre>
+
+<div class="step-title">Step 3: Get a token from Auth Server</div>
+<ol>
+  <li>Open your browser and go to <code>http://127.0.0.1:5000/</code>.</li>
+  <li>Keep the default username (<code>admin</code>) and password (<code>secret</code>).</li>
+  <li>Click <strong>Create Token</strong>.</li>
+  <li>Copy the <code>access_token</code> from the JSON response.</li>
+</ol>
+
+<div class="step-title">Step 4: Call protected API using Service Server</div>
+<ol>
+  <li>Open another tab and go to <code>http://127.0.0.1:5001/</code>.</li>
+  <li>Paste the token into the text area.</li>
+  <li>Click <strong>Call /api/secret</strong>.</li>
+  <li>If the token is valid and not expired, you will see a JSON response with user name and role.</li>
+</ol>
+
+<div class="step-title">Step 5: Try invalid cases</div>
+<ul>
+  <li>Edit the token slightly → you should get <code>"Token is invalid"</code>.</li>
+  <li>Remove the <code>Bearer</code> prefix → you should get a header format error.</li>
+  <li>After the expiry time passes, you would get <code>"Token has expired"</code> if you adjust the clock or expiry for testing.</li>
+</ul>
+
+<h2>10. Recap</h2>
+<ul>
+  <li>You built two separate Python servers, each serving its own HTML UI.</li>
+  <li>The first server creates a JWT bearer token after validating a login.</li>
+  <li>The second server protects an API and only returns data when a valid Bearer token is sent.</li>
+  <li>The browser pages use JavaScript <code>fetch()</code> to call the APIs and show real responses.</li>
+</ul>
+<p>This small project is an excellent teaching example for explaining authentication, bearer tokens, and how front-end and back-end work together.</p>
+
+</main>
+</body>
+</html>
