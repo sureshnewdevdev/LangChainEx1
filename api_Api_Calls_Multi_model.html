@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>API Development – W3Schools Style Notes</title>
+<style>
+body {font-family: Arial, sans-serif; margin:0; padding:0; background:#f2f2f2;}
+.w3-container {padding:20px;}
+.w3-card {background:white; padding:20px; margin:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.2);}
+.w3-purple {background:#8e24aa; color:white; padding:10px; border-radius:6px;}
+h2 {color:#8e24aa;}
+.code {background:#eee; padding:10px; border-radius:6px; font-family: Consolas;}
+</style>
+</head>
+<body>
+
+<div class="w3-container">
+  <h1 class="w3-purple">API Development – W3Schools Style Notes</h1>
+
+  <div class="w3-card">
+    <h2>Python Level 3 – Advanced API Concepts</h2>
+    <p>This level covers deeper API creation concepts, including request lifecycle, dependency injection, async APIs, security layers, schema validation, and performance tuning.</p>
+  </div>
+
+  <div class="w3-card">
+    <h2>Comprehensive API Development</h2>
+    <ul>
+      <li>Building scalable APIs</li>
+      <li>Authentication & Authorization</li>
+      <li>Error handling & custom exceptions</li>
+      <li>Advanced routing techniques</li>
+      <li>API logging and monitoring</li>
+    </ul>
+  </div>
+
+  <div class="w3-card">
+    <h2>API Development Frameworks</h2>
+    <p>Popular Python frameworks for API building include:</p>
+    <ul>
+      <li><b>FastAPI</b> – Modern, high-performance, async support</li>
+      <li><b>Flask</b> – Lightweight and flexible</li>
+      <li><b>Django REST Framework</b> – Full-featured enterprise API system</li>
+    </ul>
+  </div>
+
+  <div class="w3-card">
+    <h2>FastAPI for API Creation</h2>
+    <p>FastAPI is one of the most advanced frameworks that leverages Python type hints.</p>
+    <div class="code">
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return {"message": "Hello FastAPI!"}
+    </div>
+  </div>
+
+  <div class="w3-card">
+    <h2>Flask RESTful APIs</h2>
+    <p>Flask provides simplicity and flexibility for building REST APIs.</p>
+    <div class="code">
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return jsonify(message="Hello Flask!")
+    </div>
+  </div>
+
+  <div class="w3-card">
+    <h2>Pydantic for Data Validation</h2>
+    <p>Pydantic ensures structured data validation using Python types.</p>
+    <div class="code">
+from pydantic import BaseModel
+
+class User(BaseModel):
+    name: str
+    age: int
+    email: str
+    </div>
+  </div>
+
+  <div class="w3-card">
+    <h2>API Versioning</h2>
+    <p>Versioning ensures backward compatibility while evolving API features.</p>
+    <ul>
+      <li>URL versioning: /v1/users</li>
+      <li>Header versioning</li>
+      <li>Query param versioning</li>
+    </ul>
+  </div>
+
+  <div class="w3-card">
+    <h2>Middleware Implementation</h2>
+    <p>Middleware allows modifying requests and responses globally.</p>
+    <div class="code">
+@app.middleware("http")
+async def log_requests(request, call_next):
+    response = await call_next(request)
+    return response
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

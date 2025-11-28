@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gen AI API Topics – W3Schools Style Notes (v2)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background:#f5f5f5; }
+    .topbar { background:#800080; color:#fff; padding:14px 20px; font-size:22px; font-weight:bold; }
+    .container { max-width:1150px; margin:0 auto; padding:20px; }
+    .topic-menu { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+    .topic-menu a { background:#b000b0; color:#fff; padding:8px 14px; border-radius:4px; text-decoration:none; font-size:14px; }
+    .topic-menu a:hover { background:#ff4081; }
+    h2, h3 { color:#800080; }
+    .w3-card { background:#fff; border:1px solid #ddd; border-radius:4px; padding:16px 18px; margin-bottom:24px;
+               box-shadow:0 2px 4px rgba(0,0,0,0.08); }
+    .w3-note { border-left:6px solid #ff9800; background:#fff3cd; padding:10px 14px; margin:12px 0; }
+    .w3-important { border-left:6px solid #f44336; background:#ffe6e6; padding:10px 14px; margin:12px 0; }
+    .w3-example { border-left:6px solid #4CAF50; background:#f1f8e9; padding:10px 14px; margin:12px 0; }
+    pre { background:#272822; color:#f8f8f2; padding:10px 12px; overflow-x:auto; border-radius:4px;
+          font-size:13px; line-height:1.4; }
+    code { font-family:Consolas,"Courier New",monospace; }
+    table { border-collapse:collapse; width:100%; margin:10px 0; font-size:14px; }
+    th,td { border:1px solid #ddd; padding:8px; text-align:left; vertical-align:top; }
+    th { background:#800080; color:#fff; }
+    .small { font-size:13px; color:#555; }
+    ul { margin-top:6px; margin-bottom:6px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">Gen AI API Notes – W3Schools Style (v2)</div>
+  <div class="container">
+    <p class="small">
+      These notes are written for <b>practical Gen‑AI API work</b> – good for trainers, demo projects,
+      and production design discussions.
+    </p>
+
+    <div class="topic-menu">
+      <a href="#retry">Retry &amp; Backoff</a>
+      <a href="#genai-tech">Gen‑AI Techniques</a>
+      <a href="#prompt-api">Prompt Engineering via API</a>
+      <a href="#multimodal">Multi‑modal API Interaction</a>
+      <a href="#cost">API Cost Management</a>
+      <a href="#parsing">Response Parsing</a>
+    </div>
+
+    <!-- 1. Retry and Backoff -->
+    <div class="w3-card" id="retry">
+      <h2>1. Retry and Backoff Strategies</h2>
+      <p>
+        When we talk to a Gen‑AI API from our backend (Python / .NET / Node), calls can fail because of
+        <b>network issues</b>, <b>rate limits</b>, or <b>temporary server overload</b>.
+        A retry strategy decides <b>when and how often</b> we try again instead of showing an error to the user.
+      </p>
+
+      <h3>1.1 Real‑world Scenario</h3>
+      <p>
+        Imagine an HR chatbot that drafts offer letters using a Gen‑AI API.
+        During month‑end hiring, traffic is high and the API sometimes returns <code>429 Too Many Requests</code>.
+        Without retries, recruiters see random failures.
+        With a good retry + backoff policy, the system waits and succeeds quietly.
+      </p>
+
+      <h3>1.2 Types of Backoff</h3>
+      <table>
+        <tr><th>Strategy</th><th>How it waits</th><th>Pros</th><th>Cons</th></tr>
+        <tr>
+          <td>Immediate retry</td>
+          <td>No delay. Fire again instantly.</td>
+          <td>Simple, fast.</td>
+          <td>Can hit rate limit harder; not good for overload.</td>
+        </tr>
+        <tr>
+          <td>Fixed delay</td>
+          <td>Always wait a fixed time (e.g. 3 seconds) between retries.</td>
+          <td>Easy to reason about.</td>
+          <td>Too slow for small spikes; too fast for big spikes.</td>
+        </tr>
+        <tr>
+          <td>Exponential backoff</td>
+          <td>Wait time doubles after each failure: 1s, 2s, 4s, 8s...</td>
+          <td>Quick first retry, but becomes gentle if the API is unhealthy.</td>
+          <td>Many clients may still sync and retry together.</td>
+        </tr>
+        <tr>
+          <td>Exponential backoff + jitter</td>
+          <td>Add random jitter (±0.5s etc.) to each delay.</td>
+          <td>Best choice for production, avoids “thundering herd”.</td>
+          <td>A bit more code, but still simple.</td>
+        </tr>
+      </table>
+
+      <div class="w3-note">
+        <b>Idea to teach:</b> Backoff exists to <b>protect both sides</b> – your system and the provider.
+        It is a must‑have for any serious Gen‑AI integration.
+      </div>
+
+      <h3>1.3 Python Example – Respecting <code>Retry‑After</code> Header</h3>
+      <div class="w3-example">
+        <p>
+          Scenario: Sales‑email generator service. When the API returns <code>429</code> and sends a
+          <code>Retry-After</code> header, we obey that. Otherwise we use exponential backoff with jitter.
+        </p>
+        <pre><code>import time, random, requests
+
+API_URL = "https://api.example-ai.com/v1/chat"
+
+def call_genai_api(payload, max_retries=5):
+    delay = 1  # base backoff in seconds
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            r = requests.post(API_URL, json=payload, timeout=30)
+
+            # Success
+            if 200 &lt;= r.status_code &lt; 300:
+                return r.json()
+
+            # Transient errors that are safe to retry
+            if r.status_code in (429, 500, 502, 503, 504):
+                print(f"Attempt {attempt} failed: {r.status_code}")
+
+                # If server suggests a waiting time → respect it
+                retry_after = r.headers.get("Retry-After")
+                if retry_after:
+                    sleep_for = float(retry_after)
+                else:
+                    # Our own exponential + jitter backoff
+                    sleep_for = delay + random.uniform(0, 0.5)
+                    delay *= 2
+            else:
+                # Other error types are not retried
+                r.raise_for_status()
+
+        except requests.exceptions.RequestException as e:
+            print(f"Network error on attempt {attempt}: {e}")
+            sleep_for = delay + random.uniform(0, 0.5)
+            delay *= 2
+
+        if attempt == max_retries:
+            raise RuntimeError("Gen‑AI API still failing after retries.")
+
+        print(f"Waiting {sleep_for:.2f} seconds before retry...")
+        time.sleep(sleep_for)</code></pre>
+      </div>
+
+      <div class="w3-important">
+        <b>Idempotency Tip:</b> For operations like “generate reply email”, retries are safe.
+        For billing or order‑creation, use <b>idempotency keys</b> so retries do not duplicate work.
+      </div>
+    </div>
+
+    <!-- 2. Gen AI Specific Techniques -->
+    <div class="w3-card" id="genai-tech">
+      <h2>2. Gen‑AI Specific Techniques</h2>
+      <p>
+        Gen‑AI is not only about sending text. We use specific techniques to make responses more
+        <b>accurate, safe and controllable</b>.
+      </p>
+
+      <h3>2.1 Persona + Style Control</h3>
+      <p>We tell the model who it is and how it should speak.</p>
+      <div class="w3-example">
+        <p><b>Example: Support bot for a FinTech app</b></p>
+        <pre><code>system: "You are a polite, concise customer‑support agent for a mobile banking app.
+Do NOT give investment advice. If user asks for advice, ask them to contact support team."
+
+user: "Is it safe to use my card abroad? Explain simply."</code></pre>
+      </div>
+
+      <h3>2.2 Few‑shot Prompting (show patterns)</h3>
+      <div class="w3-example">
+        <p><b>Task:</b> classify feedback into <code>bug</code>, <code>feature_request</code>, or <code>other</code>.</p>
+        <pre><code>system: "Classify user feedback into: bug, feature_request, or other."
+
+user: "Feedback: The login button does nothing when I tap it.
+Label: bug"
+
+user: "Feedback: Please add dark mode for night usage.
+Label: feature_request"
+
+user: "Feedback: Good app, thanks!"
+assistant: "Label:"   # model should answer: feature_request / bug / other</code></pre>
+      </div>
+
+      <h3>2.3 Chain‑of‑Thought (CoT) for reasoning</h3>
+      <p>
+        For maths, logic, and planning, we ask it to think step‑by‑step and then give the final answer.
+      </p>
+      <div class="w3-example">
+        <pre><code>system: "You are a careful maths tutor."
+
+user: "Solve this. Show your working, then final answer in the format
+FINAL ANSWER: &lt;number&gt;.
+A warehouse has 126 boxes. Each pallet holds 9 boxes.
+How many pallets are needed?"</code></pre>
+      </div>
+
+      <h3>2.4 RAG – Retrieval Augmented Generation (very important in projects)</h3>
+      <p>
+        Instead of asking the model to “remember” everything, we store documents (PDF / policies / FAQs)
+        in a vector store, retrieve only the top‑k relevant chunks, and pass them into the prompt.
+      </p>
+      <div class="w3-example">
+        <p><b>HR policy assistant</b></p>
+        <pre><code># Pseudo‑code
+docs = vector_search("maternity leave for contract employees", top_k=4)
+context = join(docs, "
+
+")
+
+prompt = f"""
+You are an HR policy expert.
+Answer the question using ONLY the context below.
+If you are unsure, say 'I don't know based on these documents.'
+
+Context:
+{context}
+
+Question: What is the maternity leave policy for contract employees?
+"""</code></pre>
+      </div>
+
+      <h3>2.5 Tool / Function Calling (Agent‑like behaviour)</h3>
+      <p>
+        The model decides when to call tools like <code>get_weather()</code>, <code>sql_query()</code> or
+        <code>calculate_tax()</code>, then continues the conversation using the tool result.
+      </p>
+      <div class="w3-note">
+        <b>Teaching line:</b> “Gen‑AI techniques = prompt patterns + retrieval + tools +
+        guardrails around a raw model.”
+      </div>
+    </div>
+
+    <!-- 3. Prompt Engineering via API -->
+    <div class="w3-card" id="prompt-api">
+      <h2>3. Prompt Engineering via API</h2>
+      <p>
+        In code, a prompt is usually a <b>JSON payload</b> with a list of <code>messages</code>.
+        Good engineering means we build prompts from templates and variables – not from copy‑paste strings.
+      </p>
+
+      <h3>3.1 Basic Chat Request (curl)</h3>
+      <div class="w3-example">
+        <pre><code>curl https://api.example-ai.com/v1/chat/completions   -H "Content-Type: application/json"   -H "Authorization: Bearer &lt;API_KEY&gt;"   -d '{
+    "model": "gpt-4.x",
+    "messages": [
+      { "role": "system", "content": "You are a friendly data‑engineering tutor." },
+      { "role": "user", "content": "Explain Apache Airflow in 3 bullet points." }
+    ],
+    "temperature": 0.5,
+    "max_tokens": 200
+  }'</code></pre>
+      </div>
+
+      <h3>3.2 Prompt Template in Python (dynamic)</h3>
+      <div class="w3-example">
+        <p><b>Scenario:</b> Build one function that can explain any topic in a fixed style.</p>
+        <pre><code>import requests
+
+TEMPLATE = """
+You are a {role}.
+Explain the topic to a beginner in about 150 words.
+Use simple language and 3 bullet points with examples.
+
+Topic: {topic}
+"""
+
+def explain(topic, role="Gen‑AI trainer"):
+    prompt = TEMPLATE.format(role=role, topic=topic)
+    payload = {
+        "model": "gpt-4.x",
+        "messages": [
+            {"role": "system", "content": "Follow the instructions exactly."},
+            {"role": "user", "content": prompt}
+        ]
+    }
+    r = requests.post("https://api.example-ai.com/v1/chat/completions", json=payload)
+    return r.json()</code></pre>
+      </div>
+
+      <h3>3.3 Three Common Prompt Patterns in APIs</h3>
+      <table>
+        <tr><th>Pattern</th><th>Goal</th><th>Example task</th></tr>
+        <tr>
+          <td>Classification</td>
+          <td>Return a label or category.</td>
+          <td>"Is this email spam / not spam?"</td>
+        </tr>
+        <tr>
+          <td>Extraction</td>
+          <td>Pull specific fields as JSON.</td>
+          <td>"Extract invoice number, amount, due date."</td>
+        </tr>
+        <tr>
+          <td>Transformation</td>
+          <td>Change content form or style.</td>
+          <td>"Rewrite this text in formal tone."</td>
+        </tr>
+      </table>
+
+      <div class="w3-example">
+        <p><b>Example – extraction prompt via API</b></p>
+        <pre><code>prompt = """
+Read the customer email and return ONLY valid JSON with keys:
+name, product, issue, sentiment (positive|neutral|negative).
+
+Email:
+{email_text}
+"""</code></pre>
+      </div>
+    </div>
+
+    <!-- 4. Multi‑modal -->
+    <div class="w3-card" id="multimodal">
+      <h2>4. Multi‑modal API Interaction</h2>
+      <p>
+        Multi‑modal models accept or produce <b>text + other media types</b>:
+        images, audio, sometimes video. This is powerful for real‑world workflows.
+      </p>
+
+      <h3>4.1 Typical Business Use‑cases</h3>
+      <ul>
+        <li><b>Invoice reader:</b> upload a scanned invoice → extract vendor, amount, tax.</li>
+        <li><b>Dashboard explainer:</b> share a KPI screenshot → get a textual summary.</li>
+        <li><b>Quality inspection:</b> send a product photo → classify as OK / defect.</li>
+        <li><b>Meeting assistant:</b> send audio recording → transcript + action items.</li>
+      </ul>
+
+      <h3>4.2 Text + Image Request (pseudo JSON)</h3>
+      <div class="w3-example">
+        <pre><code>payload = {
+  "model": "gpt-4.x-vision",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "This is a sales dashboard. List 3 main risks you see."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://example.com/dashboard-q4.png"
+          }
+        }
+      ]
+    }
+  ]
+}</code></pre>
+      </div>
+
+      <h3>4.3 Audio → Transcript → Summary Pipeline</h3>
+      <div class="w3-example">
+        <pre><code># 1. Upload audio to speech-to-text endpoint (not shown here)
+transcript = "... long meeting transcript text ..."
+
+# 2. Send transcript to chat model for a concise summary
+prompt = (
+  "Summarise this project meeting in:
+"
+  "- 5 bullet points
+"
+  "- One list of action items with owners
+
+"
+  f"Transcript:
+{transcript}"
+)
+
+payload = {
+  "model": "gpt-4.x",
+  "messages": [
+    {"role": "system", "content": "You are a project manager assistant."},
+    {"role": "user", "content": prompt}
+  ]
+}</code></pre>
+      </div>
+
+      <div class="w3-note">
+        <b>Trainer tip:</b> For demos, use a simple image (invoice / dashboard) and show the
+        full “upload → API call → structured JSON output” pipeline.
+      </div>
+    </div>
+
+    <!-- 5. Cost Management -->
+    <div class="w3-card" id="cost">
+      <h2>5. API Cost Management</h2>
+      <p>
+        Gen‑AI cost usually depends on <b>tokens</b> (input + output) and
+        sometimes image / audio seconds. Cost management is a mix of design decisions and monitoring.
+      </p>
+
+      <h3>5.1 Simple Token Cost Example</h3>
+      <div class="w3-example">
+        <p>
+          Assume: model price is ₹0.002 per 1K tokens (approx), and each request uses 800 tokens total.<br />
+          Cost per call ≈ 800 / 1000 * 0.002 = ₹0.0016.<br />
+          For 100,000 calls per month → about ₹160.
+        </p>
+      </div>
+
+      <h3>5.2 Practical Techniques</h3>
+      <table>
+        <tr><th>Technique</th><th>How it helps</th><th>Example</th></tr>
+        <tr>
+          <td>Choose right model</td>
+          <td>Use cheaper / smaller model when deep reasoning is not needed.</td>
+          <td>Use small model for classification, large model only for complex analysis.</td>
+        </tr>
+        <tr>
+          <td>Trim context</td>
+          <td>Remove old conversation messages and boiler‑plate text.</td>
+          <td>Keep only last 5 turns of chat history.</td>
+        </tr>
+        <tr>
+          <td>Limit output</td>
+          <td>Ask for exact format and size.</td>
+          <td>"Answer in maximum 150 words and 3 bullets."</td>
+        </tr>
+        <tr>
+          <td>Cache repeated prompts</td>
+          <td>Avoid re‑calling model for same question.</td>
+          <td>Store answer for “Explain RAG” and reuse across the app.</td>
+        </tr>
+        <tr>
+          <td>Batch operations</td>
+          <td>Group many small tasks into a single request (when allowed).</td>
+          <td>Classify 20 feedback comments in one call instead of 20 calls.</td>
+        </tr>
+      </table>
+
+      <h3>5.3 Logging for Cost Visibility</h3>
+      <div class="w3-example">
+        <pre><code>def log_usage(model, prompt_tokens, completion_tokens, user_id):
+    total = prompt_tokens + completion_tokens
+    # store in DB or analytics tool
+    print(f"{user_id} used {total} tokens on {model}")</code></pre>
+      </div>
+    </div>
+
+    <!-- 6. Response Parsing -->
+    <div class="w3-card" id="parsing">
+      <h2>6. Response Parsing</h2>
+      <p>
+        For production systems we rarely keep free‑text answers. We usually want
+        <b>structured JSON</b> so that the rest of the code can use the result safely.
+      </p>
+
+      <h3>6.1 Ask for JSON Explicitly</h3>
+      <div class="w3-example">
+        <p><b>Scenario:</b> Support triage – classify and summarise ticket.</p>
+        <pre><code>prompt = """
+Read the support ticket and return ONLY valid JSON.
+
+Fields:
+- "category": one of ["billing", "technical", "account", "other"]
+- "priority": one of ["low", "medium", "high"]
+- "short_summary": 1 sentence summary in English
+
+Ticket:
+{ticket_text}
+"""</code></pre>
+      </div>
+
+      <h3>6.2 Python Parsing + Validation</h3>
+      <div class="w3-example">
+        <pre><code>import json
+
+ALLOWED_CATEGORIES = {"billing", "technical", "account", "other"}
+ALLOWED_PRIORITY = {"low", "medium", "high"}
+
+def parse_and_validate(text):
+    # 1. Try to parse as JSON
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        # Remove code fences like ```json ... ``` if model added them
+        t = text.strip()
+        if t.startswith("```"):
+            t = t.strip("`")
+            t = t.replace("json", "", 1).strip()
+        data = json.loads(t)
+
+    # 2. Basic validation
+    if data.get("category") not in ALLOWED_CATEGORIES:
+        data["category"] = "other"
+
+    if data.get("priority") not in ALLOWED_PRIORITY:
+        data["priority"] = "medium"
+
+    if not isinstance(data.get("short_summary", ""), str):
+        data["short_summary"] = ""
+
+    return data</code></pre>
+      </div>
+
+      <h3>6.3 Why Parsing Matters</h3>
+      <ul>
+        <li>You can drive workflows: route <code>priority=high</code> tickets to a special queue.</li>
+        <li>You can safely store structured data in SQL / NoSQL.</li>
+        <li>You can build dashboards and analytics directly from the parsed fields.</li>
+      </ul>
+
+      <div class="w3-important">
+        <b>Golden rule:</b> “Never trust model text blindly.”
+        Always parse, validate and sanitise before using it in other systems.
+      </div>
+    </div>
+
+    <p class="small">End of notes – version 2 with richer examples and trainer‑friendly explanations.</p>
+  </div>
+</body>
+</html>
