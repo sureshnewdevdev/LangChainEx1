@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Real Gen‑AI Chat API URLs – W3Schools Style Notes</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
+    .topbar { background:#800080; color:#fff; padding:14px 20px; font-size:22px; font-weight:bold; }
+    .container { max-width:1000px; margin:0 auto; padding:20px; }
+    h2, h3 { color:#800080; }
+    .w3-card { background:#fff; border:1px solid #ddd; border-radius:4px; padding:16px 18px; margin-bottom:24px;
+               box-shadow:0 2px 4px rgba(0,0,0,0.08); }
+    .w3-note { border-left:6px solid #ff9800; background:#fff3cd; padding:10px 14px; margin:12px 0; }
+    .w3-important { border-left:6px solid #f44336; background:#ffe6e6; padding:10px 14px; margin:12px 0; }
+    .w3-example { border-left:6px solid #4CAF50; background:#f1f8e9; padding:10px 14px; margin:12px 0; }
+    pre { background:#272822; color:#f8f8f2; padding:10px 12px; overflow-x:auto; border-radius:4px;
+          font-size:13px; line-height:1.4; }
+    code { font-family:Consolas,"Courier New",monospace; }
+    table { border-collapse:collapse; width:100%; margin:10px 0; font-size:14px; }
+    th,td { border:1px solid #ddd; padding:8px; text-align:left; vertical-align:top; }
+    th { background:#800080; color:#fff; }
+    .small { font-size:13px; color:#555; }
+    .topic-menu { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+    .topic-menu a { background:#b000b0; color:#fff; padding:6px 12px; border-radius:4px; text-decoration:none;
+                    font-size:13px; }
+    .topic-menu a:hover { background:#ff4081; }
+  </style>
+</head>
+<body>
+  <div class="topbar">Real Gen‑AI Chat API URLs – W3Schools Style Notes</div>
+  <div class="container">
+    <p class="small">
+      In examples we often use a fake URL like <code>https://api.example-ai.com/v1/chat</code>.
+      This page shows how to replace it with <b>real</b> URLs for OpenAI, Hugging Face,
+      and a local (free) Ollama server.
+    </p>
+
+    <div class="topic-menu">
+      <a href="#why">Why no anonymous free URL?</a>
+      <a href="#openai">OpenAI Chat API URL</a>
+      <a href="#hf">Hugging Face Inference API URL</a>
+      <a href="#ollama">Local Free URL (Ollama)</a>
+      <a href="#replace">How to replace api.example‑ai.com</a>
+    </div>
+
+    <div class="w3-card" id="why">
+      <h2>1. Why there is no “free, no‑key” public URL</h2>
+      <p>
+        A URL like <code>https://api.example-ai.com/v1/chat</code> is only a <b>placeholder</b>.
+        Real Gen‑AI providers require:
+      </p>
+      <ul>
+        <li>HTTPS endpoint (e.g. <code>https://api.openai.com/...</code>)</li>
+        <li>An <b>API key</b> in the request header</li>
+        <li>A <b>model name</b> (for example <code>gpt-4.1-mini</code>) in the JSON body</li>
+      </ul>
+      <div class="w3-important">
+        <b>Important:</b> There is no official, unlimited, “free &amp; anonymous” Gen‑AI URL.
+        For practice you can:
+        <ul>
+          <li>Use a provider’s <b>free tier</b> with an API key (OpenAI, Hugging Face, etc.)</li>
+          <li>Run a <b>local model</b> like Ollama (no key, runs only on your machine)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="w3-card" id="openai">
+      <h2>2. Real OpenAI Chat API URL</h2>
+      <p>
+        Official OpenAI chat completions endpoint (needs account + API key):
+      </p>
+      <div class="w3-example">
+        <pre><code>POST https://api.openai.com/v1/chat/completions
+Authorization: Bearer YOUR_OPENAI_API_KEY
+Content-Type: application/json</code></pre>
+      </div>
+
+      <h3>2.1 Example Request Body</h3>
+      <div class="w3-example">
+        <pre><code>{
+  "model": "gpt-4.1-mini",
+  "messages": [
+    { "role": "user", "content": "Say hello in one short sentence." }
+  ],
+  "max_tokens": 50,
+  "temperature": 0.5
+}</code></pre>
+      </div>
+
+      <h3>2.2 Python Example</h3>
+      <div class="w3-example">
+        <pre><code>import requests
+
+API_URL = "https://api.openai.com/v1/chat/completions"
+API_KEY = "YOUR_OPENAI_API_KEY"
+
+headers = {
+    "Authorization": f"Bearer {API_KEY}",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "model": "gpt-4.1-mini",
+    "messages": [
+        {"role": "user", "content": "Say hello from OpenAI in one sentence."}
+    ]
+}
+
+response = requests.post(API_URL, headers=headers, json=payload)
+print(response.json())</code></pre>
+      </div>
+    </div>
+
+    <div class="w3-card" id="hf">
+      <h2>3. Hugging Face Inference API URL (free tier)</h2>
+      <p>
+        Hugging Face offers many open‑source models with a <b>free usage tier</b>.
+        You still need a (free) account and a token, but calls go to a real URL:
+      </p>
+      <div class="w3-example">
+        <pre><code>POST https://api-inference.huggingface.co/models/gpt2
+Authorization: Bearer YOUR_HF_TOKEN
+Content-Type: application/json</code></pre>
+      </div>
+
+      <h3>3.1 Simple Text Generation Example</h3>
+      <div class="w3-example">
+        <pre><code>import requests
+
+API_URL = "https://api-inference.huggingface.co/models/gpt2"
+HF_TOKEN = "YOUR_HF_TOKEN"
+
+headers = {
+    "Authorization": f"Bearer {HF_TOKEN}",
+    "Content-Type": "application/json"
+}
+
+payload = { "inputs": "Explain vector database in one simple paragraph." }
+
+response = requests.post(API_URL, headers=headers, json=payload)
+print(response.json())</code></pre>
+      </div>
+      <div class="w3-note">
+        <b>Note:</b> Different models on Hugging Face may expect slightly different payload formats,
+        but the URL pattern stays: <code>https://api-inference.huggingface.co/models/&lt;model-name&gt;</code>.
+      </div>
+    </div>
+
+    <div class="w3-card" id="ollama">
+      <h2>4. Local Free URL – Ollama</h2>
+      <p>
+        If you want a <b>truly free per‑request URL</b> for practice, you can run a model locally
+        using <b>Ollama</b>. After installing Ollama and pulling a model (e.g. <code>ollama pull llama3</code>),
+        you get a local HTTP API with no key required.
+      </p>
+
+      <h3>4.1 Ollama Chat Endpoint</h3>
+      <div class="w3-example">
+        <pre><code>POST http://localhost:11434/api/chat
+Content-Type: application/json</code></pre>
+      </div>
+
+      <h3>4.2 Example Request Body</h3>
+      <div class="w3-example">
+        <pre><code>{
+  "model": "llama3",
+  "messages": [
+    { "role": "user", "content": "Explain RAG in 3 bullet points." }
+  ]
+}</code></pre>
+      </div>
+
+      <h3>4.3 Python Example</h3>
+      <div class="w3-example">
+        <pre><code>import requests
+
+API_URL = "http://localhost:11434/api/chat"
+
+payload = {
+    "model": "llama3",
+    "messages": [
+        {"role": "user", "content": "Explain RAG in 3 bullet points."}
+    ]
+}
+
+response = requests.post(API_URL, json=payload)
+print(response.json())</code></pre>
+      </div>
+
+      <div class="w3-note">
+        <b>Good for lab:</b> This is perfect for teaching in a classroom where internet is restricted.
+        Every student can run a local model and hit <code>http://localhost:11434/api/chat</code> from Postman or Python.
+      </div>
+    </div>
+
+    <div class="w3-card" id="replace">
+      <h2>5. How to replace <code>https://api.example-ai.com/v1/chat</code> in your code</h2>
+      <p>
+        In training material we used:
+      </p>
+      <div class="w3-example">
+        <pre><code>API_URL = "https://api.example-ai.com/v1/chat"</code></pre>
+      </div>
+
+      <h3>5.1 Replace with OpenAI</h3>
+      <div class="w3-example">
+        <pre><code># OLD (fake)
+API_URL = "https://api.example-ai.com/v1/chat"
+
+# NEW (real OpenAI)
+API_URL = "https://api.openai.com/v1/chat/completions"</code></pre>
+      </div>
+
+      <h3>5.2 Replace with Local Ollama</h3>
+      <div class="w3-example">
+        <pre><code># For completely free local testing (no key)
+API_URL = "http://localhost:11434/api/chat"</code></pre>
+      </div>
+
+      <div class="w3-important">
+        <b>Remember:</b>
+        <ul>
+          <li>You must also set the correct <code>headers</code> (API key) and <code>payload</code> format.</li>
+          <li>The URL alone is not enough – check each provider’s docs for exact JSON fields.</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="small">
+      You can reuse this HTML file as a quick “cheat sheet” in your Gen‑AI API training sessions:
+      <br />OpenAI URL, Hugging Face URL and a local free URL (Ollama) all in one place.
+    </p>
+  </div>
+</body>
+</html>
