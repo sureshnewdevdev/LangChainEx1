@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Practical Implementations &amp; AI API Interactions - Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f1f1f1;
+}
+.topnav{
+  background:#4CAF50;
+  color:#fff;
+  padding:10px 16px;
+}
+.topnav h1{
+  margin:0;
+  font-size:20px;
+}
+.topnav small{
+  font-size:12px;
+  opacity:0.9;
+}
+.wrapper{
+  display:flex;
+}
+.sidenav{
+  width:260px;
+  background:#fff;
+  border-right:1px solid #ddd;
+  padding:12px;
+}
+.sidenav h2{
+  font-size:16px;
+  margin-top:0;
+}
+.section-title{
+  margin-top:10px;
+  margin-bottom:4px;
+  font-weight:bold;
+  color:#c2185b;
+  font-size:13px;
+}
+.sidenav a{
+  display:block;
+  padding:6px 10px;
+  margin-bottom:4px;
+  text-decoration:none;
+  font-size:13px;
+  background:#9c27b0;
+  color:#fff;
+  border-radius:3px;
+}
+.sidenav a:hover{
+  background:#6a1b9a;
+}
+.content{
+  flex:1;
+  padding:16px 24px 40px 24px;
+}
+.content h2{
+  color:#4CAF50;
+  border-bottom:2px solid #e0e0e0;
+  padding-bottom:4px;
+}
+.content h3{
+  color:#c2185b;
+}
+.content h4{
+  color:#3f51b5;
+}
+p{line-height:1.6;}
+ul,ol{margin-left:22px;}
+.example-box{
+  background:#f9f9f9;
+  border-left:4px solid #4CAF50;
+  padding:10px 12px;
+  margin:12px 0;
+}
+.note-box{
+  background:#ffffcc;
+  border-left:4px solid #ffeb3b;
+  padding:8px 12px;
+  margin:12px 0;
+  font-size:14px;
+}
+pre.code-box{
+  background:#272822;
+  color:#f8f8f2;
+  padding:10px 12px;
+  margin:6px 0 12px 0;
+  border-radius:3px;
+  overflow-x:auto;
+  font-family:Consolas,"Courier New",monospace;
+  font-size:13px;
+}
+.tag{
+  display:inline-block;
+  background:#eee;
+  border-radius:3px;
+  padding:2px 6px;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  margin-bottom:6px;
+}
+.diagram{
+  background:#fff;
+  border:1px solid #ddd;
+  padding:8px 10px;
+  font-family:Consolas,"Courier New",monospace;
+  font-size:12px;
+  white-space:pre;
+  margin:10px 0 16px 0;
+}
+</style>
+</head>
+<body>
+<div class="topnav">
+  <h1>AI Intro LangChain - Practical Implementations &amp; AI API Interactions</h1>
+  <small>Creating API clients, handling complex calls, using OpenAI / Claude / Hugging Face and keeping keys secure.</small>
+</div>
+
+<div class="wrapper">
+  <div class="sidenav">
+    <h2>Contents</h2>
+
+    <div class="section-title">Practical Implementations</div>
+    <a href="#practical-overview">Practical overview</a>
+    <a href="#creating-api-clients">Creating API clients</a>
+    <a href="#complex-api-interactions">Complex API interactions</a>
+    <a href="#request-optimization">Request optimization</a>
+    <a href="#advanced-api-integration">Advanced integration patterns</a>
+
+    <div class="section-title">AI API Interactions</div>
+    <a href="#ai-api-overview">AI API overview</a>
+    <a href="#openai-api">OpenAI API integration</a>
+    <a href="#anthropic-api">Anthropic Claude API</a>
+    <a href="#huggingface-api">Hugging Face Inference API</a>
+    <a href="#credential-management">Credential management</a>
+    <a href="#secure-api-keys">Secure API key handling</a>
+  </div>
+
+  <div class="content">
+
+    <section id="practical-overview">
+      <span class="tag">Intro</span>
+      <h2>Practical Implementations - Overview</h2>
+      <p>
+        This section focuses on how to call REST APIs from Python in a clean, reusable way.
+        You will build a small client layer, then improve it with pagination, retries and
+        performance techniques that you can use in any data engineering or AI project.
+      </p>
+      <ul>
+        <li>Wrap HTTP calls inside a <strong>client class</strong>.</li>
+        <li>Handle <strong>pagination</strong>, <strong>retries</strong> and <strong>multi-step workflows</strong>.</li>
+        <li>Reduce latency with <strong>filtering</strong>, <strong>batching</strong> and <strong>parallel calls</strong>.</li>
+        <li>Understand patterns like <strong>webhooks</strong>, <strong>circuit breakers</strong> and <strong>API gateways</strong>.</li>
+      </ul>
+    </section>
+
+    <section id="creating-api-clients">
+      <span class="tag">Topic</span>
+      <h2>Creating API Clients</h2>
+
+      <h3>1. What is an API client?</h3>
+      <p>
+        An API client is a Python class that hides low level details of HTTP:
+      </p>
+      <ul>
+        <li>It stores the <strong>base URL</strong> of the service.</li>
+        <li>It knows which <strong>headers</strong> and <strong>auth</strong> to send.</li>
+        <li>It exposes simple methods like <code>get_user()</code> or <code>create_order()</code>.</li>
+        <li>It converts HTTP errors into clear Python exceptions.</li>
+      </ul>
+
+      <div class="example-box">
+        <h4>Example: GitHub API client (GET + POST)</h4>
+        <p><strong>Install dependency</strong></p>
+        <pre class="code-box">pip install requests</pre>
+
+        <p><strong>File: github_client.py</strong></p>
+        <pre class="code-box">import os
+import requests
+
+class GitHubClient:
+    def __init__(self, token: str | None = None):
+        self.base_url = "https://api.github.com"
+        self.session = requests.Session()
+
+        # read token from argument or environment variable
+        if token is None:
+            token = os.getenv("GITHUB_TOKEN")
+
+        if token:
+            self.session.headers.update({
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json"
+            })
+
+    def get_user(self, username: str):
+        # GET /users/{username}
+        url = f"{self.base_url}/users/{username}"
+        resp = self.session.get(url, timeout=5)
+        resp.raise_for_status()
+        return resp.json()
+
+    def create_repo(self, name: str, private: bool = True):
+        # POST /user/repos
+        url = f"{self.base_url}/user/repos"
+        payload = {"name": name, "private": private}
+        resp = self.session.post(url, json=payload, timeout=5)
+        resp.raise_for_status()
+        return resp.json()</pre>
+
+        <p><strong>Usage example</strong></p>
+        <pre class="code-box">from github_client import GitHubClient
+
+client = GitHubClient()  # uses GITHUB_TOKEN from environment
+
+user = client.get_user("octocat")
+print("User:", user["login"], "| public repos:", user["public_repos"])
+
+# repo = client.create_repo("demo-repo-from-code")
+# print("Created:", repo["full_name"])</pre>
+      </div>
+
+      <div class="note-box">
+        The rest of your application never calls <code>requests.get()</code> directly.
+        It only talks to <code>GitHubClient</code>. This makes tests, logging and retries much easier.
+      </div>
+    </section>
+
+    <section id="complex-api-interactions">
+      <span class="tag">Topic</span>
+      <h2>Handling Complex API Interactions</h2>
+      <p>
+        Real systems rarely make a single request. You often need to handle:
+      </p>
+      <ul>
+        <li>Large datasets returned in <strong>pages</strong>.</li>
+        <li>Temporary network problems (need <strong>retries</strong>).</li>
+        <li>Business flows that require multiple endpoints in sequence.</li>
+      </ul>
+
+      <h3>1. Pagination</h3>
+      <pre class="code-box">def list_all_issues(owner: str, repo: str, state: str = "open"):
+    url = f"https://api.github.com/repos/{owner}/{repo}/issues"
+    params = {"state": state, "per_page": 50, "page": 1}
+    all_issues: list[dict] = []
+
+    while True:
+        resp = requests.get(url, params=params, timeout=5)
+        resp.raise_for_status()
+        data = resp.json()
+        if not data:
+            break   # no more pages
+
+        all_issues.extend(data)
+        params["page"] += 1
+
+    return all_issues</pre>
+
+      <h3>2. Retry with exponential backoff</h3>
+      <pre class="code-box">import time
+import requests
+
+def get_with_retry(url: str, max_retries: int = 3):
+    for attempt in range(max_retries):
+        try:
+            resp = requests.get(url, timeout=5)
+            resp.raise_for_status()
+            return resp
+        except requests.exceptions.RequestException as exc:
+            wait = 2 ** attempt  # 1s, 2s, 4s ...
+            print(f"Attempt {attempt + 1} failed: {exc}")
+            if attempt == max_retries - 1:
+                raise
+            print(f"Waiting {wait} seconds before retry...")
+            time.sleep(wait)</pre>
+
+      <h3>3. Multi-step workflow</h3>
+      <pre class="code-box">def cancel_user_subscription(client, user_email: str):
+    # 1) Find user by email
+    users = client.get("/users", params={"email": user_email})
+    if not users:
+        raise ValueError("User not found")
+    user_id = users[0]["id"]
+
+    # 2) Get active subscription
+    sub = client.get(f"/users/{user_id}/subscriptions/active")
+    sub_id = sub["id"]
+
+    # 3) Cancel subscription
+    result = client.post(f"/subscriptions/{sub_id}/cancel", json={})
+    return result</pre>
+    </section>
+
+    <section id="request-optimization">
+      <span class="tag">Topic</span>
+      <h2>Request Optimization Techniques</h2>
+
+      <h3>1. Filter on the server</h3>
+      <div class="example-box">
+        <p><strong>Bad pattern (filter in Python):</strong></p>
+        <pre class="code-box">resp = requests.get("https://api.example.com/orders")
+orders = [o for o in resp.json() if o["status"] == "PENDING"]</pre>
+
+        <p><strong>Better pattern (filter in API):</strong></p>
+        <pre class="code-box">resp = requests.get(
+    "https://api.example.com/orders",
+    params={"status": "PENDING"},
+)
+orders = resp.json()</pre>
+      </div>
+
+      <h3>2. Batch requests</h3>
+      <pre class="code-box">order_ids = [101, 102, 103]
+
+resp = requests.post(
+    "https://api.example.com/orders/bulk-details",
+    json={"ids": order_ids},
+)
+details = resp.json()</pre>
+
+      <h3>3. Simple cache</h3>
+      <pre class="code-box">_cache: dict[str, dict] = {}
+
+def get_product(product_id: str):
+    if product_id in _cache:
+        print("Using cache for", product_id)
+        return _cache[product_id]
+
+    resp = requests.get(f"https://api.example.com/products/{product_id}")
+    resp.raise_for_status()
+    data = resp.json()
+    _cache[product_id] = data
+    return data</pre>
+
+      <h3>4. Parallel calls</h3>
+      <pre class="code-box">import concurrent.futures
+import requests
+
+def fetch(url: str):
+    return requests.get(url, timeout=5)
+
+urls = [
+    "https://jsonplaceholder.typicode.com/posts/1",
+    "https://jsonplaceholder.typicode.com/posts/2",
+    "https://jsonplaceholder.typicode.com/posts/3",
+]
+
+with concurrent.futures.ThreadPoolExecutor(max_workers=3) as ex:
+    results = list(ex.map(fetch, urls))
+
+for r in results:
+    print(r.status_code, r.json()["id"])</pre>
+    </section>
+
+    <section id="advanced-api-integration">
+      <span class="tag">Topic</span>
+      <h2>Advanced API Integration Patterns</h2>
+
+      <h3>1. Webhooks vs Polling</h3>
+      <ul>
+        <li><strong>Polling</strong> – your service repeatedly asks the provider: “any update?”</li>
+        <li><strong>Webhook</strong> – provider calls your URL when an event happens.</li>
+      </ul>
+
+      <div class="diagram">Client ----&gt; Payment Provider
+
+Payment Provider -- HTTP POST --&gt;  https://your-api.com/webhook/payment</div>
+
+      <pre class="code-box">from fastapi import FastAPI, Request
+
+app = FastAPI()
+
+@app.post("/webhook/payment")
+async def payment_webhook(request: Request):
+    payload = await request.json()
+    event_type = payload["event"]
+    print("Received event:", event_type)
+    return {"status": "ok"}</pre>
+
+      <h3>2. Circuit breaker (simple idea)</h3>
+      <pre class="code-box">FAILURES = 0
+OPEN = False
+
+def call_partner_api():
+    global FAILURES, OPEN
+
+    if OPEN:
+        raise RuntimeError("Circuit open - external API is down")
+
+    try:
+        resp = requests.get("https://partner.com/api")
+        resp.raise_for_status()
+        FAILURES = 0
+        return resp.json()
+    except requests.exceptions.RequestException:
+        FAILURES += 1
+        if FAILURES &gt;= 3:
+            OPEN = True
+        raise</pre>
+
+      <h3>3. API gateway pattern</h3>
+      <div class="diagram">Client Apps
+   |
+   v
++------------------------+
+|      API Gateway       |
+|  Auth, rate limit      |
+|  Logging, routing      |
++-----------+------------+
+            |
+   +--------+--------+--------------+
+   |                 |              |
+User Service   Order Service   Billing Service</div>
+    </section>
+
+    <section id="ai-api-overview">
+      <span class="tag">Intro</span>
+      <h2>AI API Interactions - Overview</h2>
+      <p>
+        AI providers expose language models over HTTP. All of them follow the same basic flow:
+      </p>
+      <ol>
+        <li>Send a <strong>prompt</strong> or list of <strong>messages</strong> to the API.</li>
+        <li>The model generates a response (usually text or JSON).</li>
+        <li>You pay per token or per second of usage.</li>
+      </ol>
+    </section>
+
+    <section id="openai-api">
+      <span class="tag">Provider</span>
+      <h2>OpenAI API Integration</h2>
+
+      <div class="example-box">
+        <h4>Chat completion example</h4>
+        <p><strong>Install library</strong></p>
+        <pre class="code-box">pip install openai</pre>
+
+        <p><strong>Set key (PowerShell)</strong></p>
+        <pre class="code-box">$env:OPENAI_API_KEY = "sk-..."</pre>
+
+        <p><strong>File: openai_chat_demo.py</strong></p>
+        <pre class="code-box">import os
+from openai import OpenAI
+
+client = OpenAI()  # reads OPENAI_API_KEY from environment
+
+def ask_chatbot(user_message: str) -&gt; str:
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a helpful API tutor."},
+            {"role": "user", "content": user_message},
+        ],
+        temperature=0.2,
+    )
+    return response.choices[0].message.content
+
+if __name__ == "__main__":
+    print(ask_chatbot("Explain REST API in 3 bullet points."))</pre>
+      </div>
+    </section>
+
+    <section id="anthropic-api">
+      <span class="tag">Provider</span>
+      <h2>Anthropic Claude API</h2>
+
+      <div class="example-box">
+        <h4>Summarisation example</h4>
+        <pre class="code-box">pip install anthropic</pre>
+        <pre class="code-box">import os
+from anthropic import Anthropic
+
+client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+message = client.messages.create(
+    model="claude-3-haiku-20240307",
+    max_tokens=200,
+    messages=[
+        {
+            "role": "user",
+            "content": "Summarize HTTP methods GET, POST, PUT and DELETE."
+        }
+    ],
+)
+
+print(message.content[0].text)</pre>
+      </div>
+    </section>
+
+    <section id="huggingface-api">
+      <span class="tag">Provider</span>
+      <h2>Hugging Face Inference API</h2>
+
+      <div class="example-box">
+        <h4>Text generation via HTTP</h4>
+        <pre class="code-box">pip install requests</pre>
+        <pre class="code-box">import os
+import requests
+
+API_TOKEN = os.getenv("HF_API_TOKEN")
+MODEL_ID = "gpt2"  # demo model for text generation
+
+headers = {
+    "Authorization": f"Bearer {API_TOKEN}",
+    "Content-Type": "application/json",
+}
+
+payload = {
+    "inputs": "Explain what an API client is in simple terms.",
+    "parameters": {"max_new_tokens": 60},
+}
+
+response = requests.post(
+    f"https://api-inference.huggingface.co/models/{MODEL_ID}",
+    headers=headers,
+    json=payload,
+    timeout=30,
+)
+
+print(response.json())</pre>
+      </div>
+    </section>
+
+    <section id="credential-management">
+      <span class="tag">Security</span>
+      <h2>Credential Management</h2>
+
+      <h3>1. Use .env for local development</h3>
+      <div class="example-box">
+        <p><strong>.env file</strong></p>
+        <pre class="code-box">OPENAI_API_KEY=sk-xxxx
+ANTHROPIC_API_KEY=sk-anthropic-xxx
+HF_API_TOKEN=hf_xxx</pre>
+
+        <p><strong>Python config using python-dotenv</strong></p>
+        <pre class="code-box">pip install python-dotenv</pre>
+        <pre class="code-box">from dotenv import load_dotenv
+import os
+
+load_dotenv()  # reads values from .env
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+HF_API_TOKEN = os.getenv("HF_API_TOKEN")</pre>
+
+        <p><strong>.gitignore</strong></p>
+        <pre class="code-box">.env</pre>
+      </div>
+
+      <h3>2. Use secret stores in cloud</h3>
+      <p>
+        In production, use services such as Azure Key Vault, AWS Secrets Manager or
+        GCP Secret Manager. Applications authenticate with an IAM role / managed
+        identity and fetch secrets at runtime instead of hard-coding them.
+      </p>
+    </section>
+
+    <section id="secure-api-keys">
+      <span class="tag">Security</span>
+      <h2>Secure API Key Handling</h2>
+
+      <h3>1. Never expose keys in front-end code</h3>
+      <pre class="code-box">// ❌ Bad example - visible to every browser user
+const OPENAI_API_KEY = "sk-123...";</pre>
+      <p>
+        Correct pattern: browser sends the question to your backend. The backend
+        holds the secret key and talks to OpenAI / Claude / Hugging Face, then
+        returns only the answer to the browser.
+      </p>
+
+      <h3>2. Rotate keys regularly</h3>
+      <ul>
+        <li>Create a new key in the provider portal.</li>
+        <li>Update your secret store or environment variable.</li>
+        <li>Restart / redeploy the app.</li>
+        <li>Disable or delete the old key.</li>
+      </ul>
+
+      <h3>3. Avoid logging secrets</h3>
+      <pre class="code-box"># ❌ Dangerous
+print("Headers:", headers)
+
+# ✅ Mask Authorization header
+safe_headers = {
+    k: ("***" if k.lower() == "authorization" else v)
+    for k, v in headers.items()
+}
+print("Headers:", safe_headers)</pre>
+    </section>
+
+  </div>
+</div>
+</body>
+</html>
