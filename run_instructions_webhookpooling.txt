@@ -1,0 +1,72 @@
+
+How to Run the Webhook & Polling Applications
+=============================================
+
+1. Extract the ZIP File
+-----------------------
+Unzip: Webhook_Polling_Package.zip
+
+Inside you will see:
+- webhook_polling_notes.html
+- polling_example.py
+- webhook_receiver.py
+- streamlit_polling_app.py
+
+2. Create Virtual Environment
+-----------------------------
+
+Windows:
+    python -m venv venv
+    venv\Scripts\activate
+
+Mac/Linux:
+    python3 -m venv venv
+    source venv/bin/activate
+
+3. Install Required Libraries
+-----------------------------
+    pip install requests fastapi uvicorn streamlit
+
+4. Run Polling App
+------------------
+    python polling_example.py
+
+This calls the fake API every 5 seconds and prints results.
+
+5. Run Webhook Receiver (FastAPI)
+---------------------------------
+    uvicorn webhook_receiver:app --reload --port 8000
+
+Access URL:
+    http://localhost:8000/webhook
+
+6. Test the Webhook Manually
+----------------------------
+    python - <<EOF
+import requests
+payload = {"event": "order_created", "order_id": 101}
+requests.post("http://localhost:8000/webhook", json=payload)
+EOF
+
+7. Run Streamlit Polling UI
+---------------------------
+    streamlit run streamlit_polling_app.py
+
+Opens:
+    http://localhost:8501
+
+Streamlit UI auto-refreshes every 3 seconds.
+
+All Commands Summary
+--------------------
+Activate environment:
+    venv\Scripts\activate
+    source venv/bin/activate
+
+Install:
+    pip install fastapi uvicorn requests streamlit
+
+Run Apps:
+    python polling_example.py
+    uvicorn webhook_receiver:app --reload --port 8000
+    streamlit run streamlit_polling_app.py

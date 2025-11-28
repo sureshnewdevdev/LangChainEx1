@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Webhooks vs Polling - Streamlit + Python Tutorial</title>
+<style>
+body { font-family: Arial; margin: 20px; line-height: 1.6; background:#fdf6ff; }
+h1 { color:#a200ff; }
+h2 { color:#d633ff; margin-top:30px; }
+code { background:#ffe6ff; padding:4px; border-radius:4px; }
+.box { border:1px solid #ffb3ff; padding:15px; background:white; border-radius:8px; margin-bottom:20px; }
+pre { background:#fff0ff; padding:10px; border-radius:5px; overflow:auto; }
+</style>
+</head>
+<body>
+
+<h1>🌐 Webhooks vs Polling — Complete Beginner Notes (Python + Streamlit)</h1>
+
+<div class="box">
+<h2>📌 Introduction</h2>
+<p>This guide explains the difference between <b>Webhooks</b> and <b>Polling</b> using Python, Streamlit, and Fake API examples.  
+You can run these examples in any local Python environment.</p>
+</div>
+
+<h2>🔥 1. What is Polling?</h2>
+<div class="box">
+<p><b>Polling</b> means your application keeps checking the server repeatedly to see if new data is available.</p>
+
+<p><b>Real-world example:</b> Checking WhatsApp messages every 5 seconds manually.</p>
+
+<h3>🛠 How Polling Works</h3>
+<ul>
+<li>Your app sends repeated GET requests.</li>
+<li>Server responds with the newest data.</li>
+<li>If no new data → still responds.</li>
+</ul>
+</div>
+
+<h2>📌 Polling Example (Python + Fake API)</h2>
+<div class="box">
+<h3>Python Code</h3>
+<pre><code>
+import time
+import requests
+
+FAKE_API = "https://jsonplaceholder.typicode.com/posts/1"
+
+def poll_api():
+    while True:
+        response = requests.get(FAKE_API)
+        print("Polled Data:", response.json())
+        time.sleep(5)   # poll every 5 seconds
+
+poll_api()
+</code></pre>
+</div>
+
+<h2>📌 Polling Example in Streamlit</h2>
+<div class="box">
+<pre><code>
+import streamlit as st
+import requests
+import time
+
+st.title("Polling Example")
+
+API_URL = "https://jsonplaceholder.typicode.com/posts/1"
+
+placeholder = st.empty()
+
+while True:
+    data = requests.get(API_URL).json()
+    placeholder.write(data)
+    time.sleep(3)
+</code></pre>
+</div>
+
+<hr>
+
+<h2>🔥 2. What is a Webhook?</h2>
+<div class="box">
+<p><b>Webhook</b> is an automatic push mechanism.</p>
+
+<p><b>Real-world example:</b> WhatsApp sends you a notification instantly when you receive a message.</p>
+
+<h3>🛠 How Webhooks Work</h3>
+<ul>
+<li>You provide your server URL to a provider.</li>
+<li>When new event occurs → provider <b>pushes</b> data to your endpoint.</li>
+<li>No need for continuous checking.</li>
+</ul>
+</div>
+
+<h2>📌 Webhook Example (Python + FastAPI Fake Webhook Receiver)</h2>
+<div class="box">
+<pre><code>
+from fastapi import FastAPI, Request
+
+app = FastAPI()
+
+@app.post("/webhook")
+async def webhook_receiver(request: Request):
+    data = await request.json()
+    print("Webhook Received:", data)
+    return {"status": "success"}
+</code></pre>
+</div>
+
+<h2>📌 Triggering Webhook Manually (Fake)</h2>
+<div class="box">
+<pre><code>
+import requests
+
+payload = {"message": "Hello from Fake API!"}
+
+requests.post("http://localhost:8000/webhook", json=payload)
+</code></pre>
+</div>
+
+<hr>
+
+<h2>📌 Streamlit Webhook Listener (Local Simulation)</h2>
+<div class="box">
+<pre><code>
+import streamlit as st
+import json
+
+st.title("Webhook Receiver Simulation")
+
+st.write("Paste your JSON Payload:")
+
+payload = st.text_area("Payload")
+
+if st.button("Process Webhook"):
+    try:
+        data = json.loads(payload)
+        st.success("Webhook Processed Successfully!")
+        st.json(data)
+    except:
+        st.error("Invalid JSON")
+</code></pre>
+</div>
+
+<hr>
+
+<h2>🆚 Webhook vs Polling (Comparison Table)</h2>
+<table border="1" cellpadding="10" cellspacing="0">
+<tr><th>Feature</th><th>Polling</th><th>Webhook</th></tr>
+<tr><td>Communication</td><td>App keeps asking</td><td>Server pushes automatically</td></tr>
+<tr><td>Speed</td><td>Slower</td><td>Instant</td></tr>
+<tr><td>Network Usage</td><td>High</td><td>Low</td></tr>
+<tr><td>Complexity</td><td>Easy</td><td>Needs endpoint</td></tr>
+<tr><td>Real-world</td><td>Refresh to check messages</td><td>Push notification</td></tr>
+</table>
+
+<hr>
+
+<h2>🎯 Conclusion</h2>
+<div class="box">
+<p>✔ Use <b>Polling</b> when data frequency is predictable and not urgent.</p>
+<p>✔ Use <b>Webhooks</b> when real-time updates are required.</p>
+<p>✔ Streamlit can simulate both methods easily.</p>
+</div>
+
+</body>
+</html>
