@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>API Development Frameworks – FastAPI, Flask, Pydantic, Versioning & Middleware</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body{
+      margin:0;
+      font-family:Arial,Helvetica,sans-serif;
+      background:#f5f5f5;
+    }
+    .topnav{
+      background:#4CAF50;
+      color:#fff;
+      padding:12px 18px;
+    }
+    .topnav h1{
+      margin:0;
+      font-size:22px;
+    }
+    .topnav small{
+      font-size:12px;
+      opacity:0.9;
+    }
+    .wrapper{
+      display:flex;
+      min-height:100vh;
+    }
+    .sidenav{
+      width:260px;
+      background:#fff;
+      border-right:1px solid #ddd;
+      padding:12px;
+      box-sizing:border-box;
+    }
+    .sidenav h2{
+      font-size:16px;
+      margin-top:0;
+    }
+    .sidenav a{
+      display:block;
+      padding:7px 10px;
+      margin-bottom:5px;
+      text-decoration:none;
+      font-size:13px;
+      background:#9c27b0;
+      color:#fff;
+      border-radius:3px;
+    }
+    .sidenav a:hover{
+      background:#6a1b9a;
+    }
+    .content{
+      flex:1;
+      padding:18px 24px 40px 24px;
+      box-sizing:border-box;
+    }
+    .content h2{
+      color:#4CAF50;
+      border-bottom:2px solid #e0e0e0;
+      padding-bottom:4px;
+      margin-top:18px;
+    }
+    .content h3{
+      color:#c2185b;
+      margin-bottom:4px;
+    }
+    .content h4{
+      color:#3f51b5;
+      margin-bottom:4px;
+    }
+    p{line-height:1.6;}
+    ul,ol{margin-left:22px;}
+    .tag{
+      display:inline-block;
+      background:#eee;
+      border-radius:3px;
+      padding:2px 6px;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.04em;
+      margin-bottom:6px;
+    }
+    .example-box{
+      background:#f9f9f9;
+      border-left:4px solid #4CAF50;
+      padding:10px 12px;
+      margin:12px 0;
+    }
+    .note-box{
+      background:#ffffcc;
+      border-left:4px solid #ffeb3b;
+      padding:8px 12px;
+      margin:12px 0;
+      font-size:14px;
+    }
+    .warning-box{
+      background:#ffe0e0;
+      border-left:4px solid #e53935;
+      padding:8px 12px;
+      margin:12px 0;
+      font-size:14px;
+    }
+    pre.code-box{
+      background:#272822;
+      color:#f8f8f2;
+      padding:10px 12px;
+      margin:6px 0 12px 0;
+      border-radius:3px;
+      overflow-x:auto;
+      font-family:Consolas,"Courier New",monospace;
+      font-size:13px;
+    }
+    .diagram{
+      background:#fff;
+      border:1px solid #ddd;
+      padding:8px 10px;
+      font-family:Consolas,"Courier New",monospace;
+      font-size:12px;
+      white-space:pre;
+      margin:10px 0 16px 0;
+    }
+    @media (max-width:800px){
+      .wrapper{flex-direction:column;}
+      .sidenav{width:100%; border-right:none; border-bottom:1px solid #ddd;}
+    }
+  </style>
+</head>
+<body>
+  <div class="topnav">
+    <h1>API Development Frameworks</h1>
+    <small>FastAPI • Flask • Pydantic • API Versioning • Middleware – trainer notes</small>
+  </div>
+
+  <div class="wrapper">
+    <div class="sidenav">
+      <h2>Topics</h2>
+      <a href="#fastapi">FastAPI for API Creation</a>
+      <a href="#flask">Flask RESTful APIs</a>
+      <a href="#pydantic">Pydantic for Data Validation</a>
+      <a href="#versioning">API Versioning</a>
+      <a href="#middleware">Middleware Implementation</a>
+    </div>
+
+    <div class="content">
+
+      <!-- FASTAPI -->
+      <section id="fastapi">
+        <span class="tag">FastAPI</span>
+        <h2>FastAPI for API Creation</h2>
+
+        <h3>Introduction</h3>
+        <p>
+          FastAPI is a modern Python web framework focused on building JSON APIs quickly.
+          It is built on top of <strong>Starlette</strong> (for networking) and uses
+          <strong>type hints + Pydantic</strong> for automatic validation and documentation.
+        </p>
+
+        <div class="diagram">
+Client (Browser / Postman)
+          |
+          v
+    [ FastAPI application ]
+          |
+    +-- GET /items
+    +-- POST /items
+        </div>
+
+        <h3>Key Features</h3>
+        <ul>
+          <li>Very fast – async I/O.</li>
+          <li>Automatic OpenAPI docs at <code>/docs</code> and <code>/redoc</code>.</li>
+          <li>Request body models using Pydantic.</li>
+          <li>Great developer experience – type hints, autocompletion.</li>
+        </ul>
+
+        <h3>Minimal FastAPI Example</h3>
+
+        <div class="example-box">
+          <h4>Step 1: Install</h4>
+          <pre class="code-box">pip install fastapi uvicorn</pre>
+        </div>
+
+        <div class="example-box">
+          <h4>Step 2: Create <code>main.py</code></h4>
+          <pre class="code-box">from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to ItTechGenie FastAPI demo!"}
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: str | None = None):
+    return {"item_id": item_id, "query": q}</pre>
+        </div>
+
+        <div class="example-box">
+          <h4>Step 3: Run the server</h4>
+          <pre class="code-box">uvicorn main:app --reload</pre>
+          <ul>
+            <li><code>http://127.0.0.1:8000/</code> – root JSON message.</li>
+            <li><code>http://127.0.0.1:8000/docs</code> – interactive Swagger UI.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- FLASK -->
+      <section id="flask">
+        <span class="tag">Flask</span>
+        <h2>Flask RESTful APIs</h2>
+
+        <h3>Introduction</h3>
+        <p>
+          Flask is a <strong>micro-framework</strong> – it gives you routing and request objects,
+          but you choose the structure and extensions. It is perfect to understand HTTP fundamentals.
+        </p>
+
+        <h3>Simple Product API</h3>
+
+        <div class="example-box">
+          <h4>Install</h4>
+          <pre class="code-box">pip install flask</pre>
+        </div>
+
+        <div class="example-box">
+          <h4><code>app.py</code></h4>
+          <pre class="code-box">from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+PRODUCTS = [
+    {"id": 1, "name": "Laptop", "price": 60000},
+    {"id": 2, "name": "Mouse",  "price": 800},
+]
+
+@app.get("/products")
+def get_products():
+    return jsonify(PRODUCTS)
+
+@app.post("/products")
+def create_product():
+    data = request.get_json()
+    new_id = max(p["id"] for p in PRODUCTS) + 1
+    product = {"id": new_id, "name": data["name"], "price": data["price"]}
+    PRODUCTS.append(product)
+    return jsonify(product), 201
+
+if __name__ == "__main__":
+    app.run(debug=True)</pre>
+        </div>
+
+        <p>Run the app:</p>
+        <pre class="code-box">python app.py</pre>
+        <ul>
+          <li>GET <code>/products</code> – list products.</li>
+          <li>POST <code>/products</code> – add product with JSON body.</li>
+        </ul>
+      </section>
+
+      <!-- PYDANTIC -->
+      <section id="pydantic">
+        <span class="tag">Pydantic</span>
+        <h2>Pydantic for Data Validation</h2>
+
+        <h3>Why Pydantic?</h3>
+        <p>
+          Pydantic is a library that uses Python type hints to validate and parse data.
+          It ensures that request bodies have correct types and required fields.
+        </p>
+
+        <h3>Standalone Example</h3>
+
+        <div class="example-box">
+          <h4>Install</h4>
+          <pre class="code-box">pip install pydantic</pre>
+        </div>
+
+        <div class="example-box">
+          <h4>Validate a product object</h4>
+          <pre class="code-box">from pydantic import BaseModel, ValidationError
+from typing import Optional
+
+class Product(BaseModel):
+    id: int
+    name: str
+    price: float
+    in_stock: bool = True
+    description: Optional[str] = None
+
+try:
+    # Pydantic will coerce "1" to int, "59999.50" to float
+    p = Product(id="1", name="Laptop", price="59999.50")
+    print(p)
+except ValidationError as e:
+    print("Validation failed:", e)</pre>
+        </div>
+
+        <h3>Using Pydantic with FastAPI</h3>
+
+        <div class="example-box">
+          <pre class="code-box">from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class ProductIn(BaseModel):
+    name: str
+    price: float
+
+@app.post("/products")
+def create_product(product: ProductIn):
+    # product is already validated and parsed
+    return {"status": "ok", "data": product}</pre>
+        </div>
+      </section>
+
+      <!-- VERSIONING -->
+      <section id="versioning">
+        <span class="tag">Versioning</span>
+        <h2>API Versioning</h2>
+
+        <h3>Why Version?</h3>
+        <p>
+          When clients depend on your API, you cannot break them.
+          Versioning lets you make breaking changes in a controlled way.
+        </p>
+
+        <h3>Common Strategies</h3>
+        <ul>
+          <li><strong>URL based</strong>: <code>/api/v1/users</code>, <code>/api/v2/users</code>.</li>
+          <li><strong>Header based</strong>: <code>X-API-Version: 2</code>.</li>
+          <li><strong>Query param</strong>: <code>/users?version=2</code>.</li>
+        </ul>
+
+        <h3>FastAPI URL Versioning Example</h3>
+
+        <div class="example-box">
+          <pre class="code-box">from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/api/v1/greet")
+def greet_v1():
+    return {"message": "Hello from v1"}
+
+@app.get("/api/v2/greet")
+def greet_v2():
+    return {"message": "Namaste from v2 with extra data", "lang": "en-IN"}</pre>
+        </div>
+      </section>
+
+      <!-- MIDDLEWARE -->
+      <section id="middleware">
+        <span class="tag">Middleware</span>
+        <h2>Middleware Implementation</h2>
+
+        <h3>What is Middleware?</h3>
+        <p>
+          Middleware is code that runs before and/or after each request reaches your route handler.
+          It is ideal for cross-cutting concerns such as logging and authentication.
+        </p>
+
+        <h3>FastAPI Middleware (logging)</h3>
+
+        <div class="example-box">
+          <pre class="code-box">from fastapi import FastAPI, Request
+import time
+
+app = FastAPI()
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    process_time = (time.time() - start) * 1000
+    print(f"{request.method} {request.url.path} took {process_time:.2f} ms")
+    return response
+
+@app.get("/ping")
+def ping():
+    return {"message": "pong"}</pre>
+        </div>
+
+        <h3>Flask Middleware-like Hooks</h3>
+
+        <div class="example-box">
+          <pre class="code-box">from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.before_request
+def log_request():
+    print("Incoming:", request.method, request.path)
+
+@app.after_request
+def add_header(response):
+    response.headers["X-Training"] = "ItTechGenie-API"
+    return response
+
+@app.get("/hello")
+def hello():
+    return "Hello with middleware!"</pre>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</body>
+</html>

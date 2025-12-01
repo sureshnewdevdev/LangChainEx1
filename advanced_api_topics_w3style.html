@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Advanced API Topics – W3Schools Style Notes</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
+    .topbar { background:#800080; color:#fff; padding:14px 20px; font-size:22px; font-weight:bold; }
+    .container { max-width:1150px; margin:0 auto; padding:20px; }
+    h2, h3 { color:#800080; }
+    .subtitle { color:#b000b0; font-weight:bold; margin-bottom:8px; }
+    .w3-card { background:#fff; border:1px solid #ddd; border-radius:4px; padding:16px 18px; margin-bottom:24px;
+               box-shadow:0 2px 4px rgba(0,0,0,0.08); }
+    .w3-note { border-left:6px solid #ff9800; background:#fff3cd; padding:10px 14px; margin:12px 0; }
+    .w3-important { border-left:6px solid #f44336; background:#ffe6e6; padding:10px 14px; margin:12px 0; }
+    .w3-example { border-left:6px solid #4CAF50; background:#f1f8e9; padding:10px 14px; margin:12px 0; }
+    pre { background:#272822; color:#f8f8f2; padding:10px 12px; overflow-x:auto; border-radius:4px;
+          font-size:13px; line-height:1.4; }
+    code { font-family:Consolas, "Courier New", monospace; }
+    table { border-collapse:collapse; width:100%; margin:10px 0; font-size:14px; }
+    th,td { border:1px solid #ddd; padding:8px; text-align:left; vertical-align:top; }
+    th { background:#800080; color:#fff; }
+    .small { font-size:13px; color:#555; }
+    .topic-menu { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+    .topic-menu a { background:#b000b0; color:#fff; padding:6px 12px; border-radius:4px; text-decoration:none;
+                    font-size:13px; }
+    .topic-menu a:hover { background:#ff4081; }
+    ul { margin-top:6px; margin-bottom:6px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">Advanced API Topics – W3Schools Style Notes</div>
+  <div class="container">
+    <p class="small">
+      This page covers common advanced topics you will teach after basic API usage:
+      OAuth 2.0, Swagger docs, Monitoring &amp; Logging, Containerization and Deployment strategies.
+    </p>
+
+    <div class="topic-menu">
+      <a href="#oauth">OAuth 2.0 Implementation</a>
+      <a href="#swagger">API Documentation (Swagger / OpenAPI)</a>
+      <a href="#monitoring">Monitoring &amp; Logging</a>
+      <a href="#containers">Containerization for APIs</a>
+      <a href="#deploy">Deployment Strategies</a>
+    </div>
+
+    <!-- OAuth 2.0 -->
+    <div class="w3-card" id="oauth">
+      <h2>1. OAuth 2.0 Implementation</h2>
+      <p>
+        <b>OAuth 2.0</b> is an authorization framework that lets a user give a client (web app, mobile app)
+        limited access to resources on a server, without sharing the user's password.
+      </p>
+
+      <h3>1.1 Real-world example</h3>
+      <p>
+        You log in to an analytics dashboard using your corporate Microsoft account.
+        The dashboard app never sees your password. It redirects you to Microsoft login,
+        you sign in there, and Microsoft sends an access token back to the dashboard.
+      </p>
+
+      <h3>1.2 Important roles</h3>
+      <table>
+        <tr><th>Role</th><th>Description</th><th>Example</th></tr>
+        <tr><td>Resource Owner</td><td>User who owns the data.</td><td>Employee whose profile is being read.</td></tr>
+        <tr><td>Client</td><td>Application requesting access.</td><td>React front-end or mobile app.</td></tr>
+        <tr><td>Authorization Server</td><td>Handles login, issues tokens.</td><td>Azure AD, Auth0, Keycloak.</td></tr>
+        <tr><td>Resource Server</td><td>API that hosts protected data.</td><td>Your ASP.NET / Node API.</td></tr>
+      </table>
+
+      <h3>1.3 Typical Authorization Code Flow (Web App)</h3>
+      <ol>
+        <li>User clicks "Login with &lt;Provider&gt;" in your SPA / web app.</li>
+        <li>Your app redirects the browser to the Authorization Server with client id, redirect URL, and scopes.</li>
+        <li>User signs in and consents to requested scopes.</li>
+        <li>Authorization Server redirects back to your app with a temporary <b>authorization code</b>.</li>
+        <li>Your backend exchanges the code for an <b>access token</b> (and maybe a refresh token).</li>
+        <li>Backend uses the access token in the <code>Authorization: Bearer &lt;token&gt;</code> header when calling APIs.</li>
+      </ol>
+
+      <div class="w3-note">
+        <b>Teaching tip:</b> Draw this 6-step flow as a diagram. Emphasise: browser redirects, server-to-server token exchange,
+        and using the Bearer token in API calls.
+      </div>
+
+      <h3>1.4 Simple Protected Endpoint Example (Pseudo-code)</h3>
+      <div class="w3-example">
+        <pre><code>// Example logic: Express / Node style pseudo-code
+
+app.get("/api/profile", validateJwtMiddleware, (req, res) => {
+  // validateJwtMiddleware already decoded token and attached user info
+  const userId = req.user.sub;  // subject claim
+
+  // retrieve profile for this user
+  const profile = db.getUserProfile(userId);
+  res.json(profile);
+});
+
+function validateJwtMiddleware(req, res, next) {
+  const authHeader = req.headers["authorization"] || "";
+  const token = authHeader.replace("Bearer ", "");
+
+  try {
+    const decoded = verifyJwt(token, PUBLIC_KEY);  // uses provider's public key
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+}</code></pre>
+      </div>
+
+      <div class="w3-important">
+        <b>Security note:</b> Always validate tokens using the issuer's public keys, check expiry time,
+        and verify audience (which API this token is meant for).
+      </div>
+    </div>
+
+    <!-- Swagger -->
+    <div class="w3-card" id="swagger">
+      <h2>2. API Documentation (Swagger / OpenAPI)</h2>
+      <p>
+        <b>Swagger</b> (now called <b>OpenAPI</b>) is a standard way to describe REST APIs in a machine-readable
+        format (YAML or JSON). Tools can generate beautiful documentation pages and client SDKs from this definition.
+      </p>
+
+      <h3>2.1 Why use Swagger?</h3>
+      <ul>
+        <li>Single source of truth about endpoints, parameters, and responses.</li>
+        <li>Interactive "Try it out" UI for developers and testers.</li>
+        <li>Automatic client generation for C#, Java, TypeScript, etc.</li>
+        <li>Helps keep documentation in sync with the API.</li>
+      </ul>
+
+      <h3>2.2 Mini OpenAPI Example (YAML)</h3>
+      <div class="w3-example">
+        <pre><code>openapi: 3.0.0
+info:
+  title: Customer API
+  version: 1.0.0
+paths:
+  /customers:
+    get:
+      summary: List customers
+      responses:
+        "200":
+          description: Array of customers
+  /customers/{id}:
+    get:
+      summary: Get customer by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer found
+        "404":
+          description: Customer not found</code></pre>
+      </div>
+
+      <h3>2.3 Example: ASP.NET Core with Swagger</h3>
+      <div class="w3-example">
+        <pre><code>// Program.cs (simplified)
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();  // UI at /swagger
+}
+
+app.MapControllers();
+app.Run();</code></pre>
+      </div>
+
+      <div class="w3-note">
+        <b>Teaching line:</b> "OpenAPI = contract for our API. Swagger UI = pretty front-end for that contract."
+      </div>
+    </div>
+
+    <!-- Monitoring & Logging -->
+    <div class="w3-card" id="monitoring">
+      <h2>3. Monitoring and Logging</h2>
+      <p>
+        Once an API is live, we must know what is happening inside it: errors, slow requests, unusual traffic.
+        <b>Logging</b> records events; <b>monitoring</b> aggregates them into dashboards and alerts.
+      </p>
+
+      <h3>3.1 What to log for an API</h3>
+      <ul>
+        <li>Request details: method, URL, user id (if available), correlation id.</li>
+        <li>Response status codes: 2xx, 4xx, 5xx.</li>
+        <li>Errors &amp; stack traces.</li>
+        <li>Performance data: execution time for important operations.</li>
+      </ul>
+
+      <h3>3.2 Simple Request Logging Middleware (Pseudo-code)</h3>
+      <div class="w3-example">
+        <pre><code>async function loggingMiddleware(req, res, next) {
+  const start = Date.now();
+
+  // proceed to next handler
+  await next();
+
+  const duration = Date.now() - start;
+  console.log({
+    method: req.method,
+    path: req.path,
+    status: res.statusCode,
+    duration_ms: duration
+  });
+}</code></pre>
+      </div>
+
+      <h3>3.3 Metrics to monitor</h3>
+      <table>
+        <tr><th>Metric</th><th>Meaning</th><th>Why it matters</th></tr>
+        <tr><td>Requests per second (RPS)</td><td>Traffic load on API.</td><td>Capacity planning, scaling decisions.</td></tr>
+        <tr><td>Latency (p95 / p99)</td><td>Time taken for requests.</td><td>User experience; find slow endpoints.</td></tr>
+        <tr><td>Error rate (4xx, 5xx)</td><td>How many requests fail.</td><td>Detect outages or breaking changes.</td></tr>
+        <tr><td>Resource usage</td><td>CPU, memory, DB connections.</td><td>Avoid resource exhaustion.</td></tr>
+      </table>
+
+      <div class="w3-important">
+        <b>Golden rule:</b> "If you do not log it, you cannot debug it in production."
+      </div>
+    </div>
+
+    <!-- Containerization -->
+    <div class="w3-card" id="containers">
+      <h2>4. Containerization for APIs</h2>
+      <p>
+        <b>Containerization</b> means packaging your API plus its runtime and dependencies into a single
+        lightweight unit called a <b>container</b>. Docker is the most popular tool.
+      </p>
+
+      <h3>4.1 Benefits</h3>
+      <ul>
+        <li>Same environment everywhere: dev, test, prod.</li>
+        <li>Easy horizontal scaling: just run more containers.</li>
+        <li>Simple deployment: pull image and run.</li>
+      </ul>
+
+      <h3>4.2 Example Dockerfile for a Node API</h3>
+      <div class="w3-example">
+        <pre><code># Use official Node image
+FROM node:20-alpine
+
+# Create app directory
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install --only=production
+
+# Copy source code
+COPY . .
+
+# API will listen on port 3000
+EXPOSE 3000
+
+# Start the API
+CMD ["node", "server.js"]</code></pre>
+      </div>
+
+      <h3>4.3 Build &amp; run commands</h3>
+      <div class="w3-example">
+        <pre><code># Build image
+docker build -t my-api:1.0 .
+
+# Run container
+docker run -d -p 8080:3000 --name my-api-container my-api:1.0</code></pre>
+      </div>
+
+      <div class="w3-note">
+        <b>Teaching tip:</b> Show that once the Docker image is built, it can run on any machine with Docker
+        (developer laptop, on-prem server, or cloud VM) without "it works on my machine" issues.
+      </div>
+    </div>
+
+    <!-- Deployment Strategies -->
+    <div class="w3-card" id="deploy">
+      <h2>5. Deployment Strategies</h2>
+      <p>
+        Deployment strategy = how you move a new version of your API into production while reducing risk and downtime.
+      </p>
+
+      <h3>5.1 Common Strategies</h3>
+      <table>
+        <tr><th>Strategy</th><th>Description</th><th>Pros</th><th>Cons</th></tr>
+        <tr>
+          <td>Recreate</td>
+          <td>Stop old version, start new version on same servers.</td>
+          <td>Simple.</td>
+          <td>Downtime during switch; risky if deploy fails.</td>
+        </tr>
+        <tr>
+          <td>Rolling</td>
+          <td>Gradually replace old instances with new ones, one by one.</td>
+          <td>No full downtime; works well with containers / Kubernetes.</td>
+          <td>For a time, users hit mixed versions.</td>
+        </tr>
+        <tr>
+          <td>Blue-Green</td>
+          <td>Two identical environments: Blue (current) and Green (new). Switch traffic when Green is ready.</td>
+          <td>Fast rollback: just switch back to Blue.</td>
+          <td>Costs more (two environments).</td>
+        </tr>
+        <tr>
+          <td>Canary</td>
+          <td>Send small % of traffic to new version; increase gradually if healthy.</td>
+          <td>Very safe for big changes.</td>
+          <td>More complex routing / monitoring logic.</td>
+        </tr>
+      </table>
+
+      <h3>5.2 Simple Canary Example (Conceptual)</h3>
+      <div class="w3-example">
+        <pre><code># Pseudo configuration concept
+
+# 90% of traffic to stable API v1
+route /api/ to api-v1-service weight=90
+
+# 10% of traffic to new API v2
+route /api/ to api-v2-service weight=10
+
+# If v2 metrics look good, gradually increase weight:
+# 25% -> 50% -> 100%</code></pre>
+      </div>
+
+      <div class="w3-important">
+        <b>Key message for students:</b>
+        New code is never 0% risky. Smart deployment strategies + monitoring allow us to deploy frequently
+        with minimal downtime and quick rollback.
+      </div>
+    </div>
+
+    <p class="small">
+      End of advanced topics notes. You can reuse this single HTML file as a teaching handout
+      for OAuth, Swagger, Monitoring, Containers, and Deployment strategies.
+    </p>
+  </div>
+</body>
+</html>

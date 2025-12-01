@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Containerization for APIs & Deployment Strategies – Training Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+/* Layout */
+body {
+  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color:#f4f4f4;
+}
+.topbar {
+  background:#04AA6D;
+  color:#fff;
+  padding:10px 16px;
+}
+.topbar h1 {
+  margin:0;
+  font-size:22px;
+}
+.topbar small {
+  font-size:12px;
+}
+.wrapper {
+  display:flex;
+  min-height:100vh;
+}
+.sidenav {
+  width:260px;
+  background:#fff;
+  border-right:1px solid #ddd;
+  padding:10px;
+  box-sizing:border-box;
+}
+.sidenav h2 {
+  font-size:16px;
+  margin-top:0;
+}
+.sidenav a {
+  display:block;
+  margin-bottom:4px;
+  padding:6px 10px;
+  text-decoration:none;
+  font-size:13px;
+  background:#e7f3ff;
+  border-left:4px solid #04AA6D;
+  color:#000;
+}
+.sidenav a:hover {
+  background:#d0e8ff;
+}
+.content {
+  flex:1;
+  padding:18px 24px 40px 24px;
+  box-sizing:border-box;
+}
+.content h2 {
+  color:#04AA6D;
+  border-bottom:2px solid #e0e0e0;
+  padding-bottom:4px;
+}
+.content h3 {
+  color:#b30059;
+}
+.content h4 {
+  color:#333399;
+}
+p {
+  line-height:1.6;
+}
+ul, ol {
+  margin-left:22px;
+}
+.tag {
+  display:inline-block;
+  background:#04AA6D;
+  color:#fff;
+  padding:2px 6px;
+  font-size:11px;
+  text-transform:uppercase;
+  border-radius:3px;
+  letter-spacing:0.04em;
+}
+.note-box {
+  background:#ffffcc;
+  border-left:4px solid #ffeb3b;
+  padding:8px 12px;
+  margin:12px 0;
+  font-size:14px;
+}
+.warning-box {
+  background:#ffe0e0;
+  border-left:4px solid #e53935;
+  padding:8px 12px;
+  margin:12px 0;
+  font-size:14px;
+}
+.example-box {
+  background:#f9f9f9;
+  border-left:4px solid #04AA6D;
+  padding:10px 12px;
+  margin:12px 0;
+}
+pre {
+  background:#272822;
+  color:#f8f8f2;
+  padding:10px 12px;
+  border-radius:3px;
+  overflow-x:auto;
+  font-family:Consolas,"Courier New",monospace;
+  font-size:13px;
+}
+.code-title {
+  background:#333;
+  color:#fff;
+  padding:3px 8px;
+  display:inline-block;
+  border-radius:3px 3px 0 0;
+  font-size:11px;
+}
+.diagram {
+  background:#fff;
+  border:1px solid #ddd;
+  padding:8px 10px;
+  font-family:Consolas,"Courier New",monospace;
+  font-size:12px;
+  white-space:pre;
+  margin:10px 0 16px 0;
+}
+@media (max-width:900px) {
+  .wrapper { flex-direction:column; }
+  .sidenav {
+    width:100%;
+    border-right:none;
+    border-bottom:1px solid #ddd;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Containerization for APIs &amp; Deployment Strategies</h1>
+  <small>Training Notes – Step-by-Step, Beginner Friendly</small>
+</div>
+
+<div class="wrapper">
+  <div class="sidenav">
+    <h2>Contents</h2>
+    <a href="#intro">Overview</a>
+    <a href="#containerization">Containerization for APIs</a>
+    <a href="#cont-basics">• Container Basics</a>
+    <a href="#dockerfile">• Dockerfile for a REST API</a>
+    <a href="#image-build-run">• Build &amp; Run the Container</a>
+    <a href="#multi-env">• Dev / Test / Prod</a>
+    <a href="#best-practices">• Best Practices</a>
+    <a href="#deployment">Deployment Strategies</a>
+    <a href="#simple-deploy">• Simple / Single Node</a>
+    <a href="#strategies">• Blue-Green, Rolling, Canary</a>
+    <a href="#k8s-example">• Example with Containers / K8s</a>
+    <a href="#summary">Summary &amp; Interview Tips</a>
+  </div>
+
+  <div class="content">
+    <!-- INTRO -->
+    <section id="intro">
+      <span class="tag">Overview</span>
+      <h2>1. Overview</h2>
+      <p>
+        When you build APIs (REST, GraphQL, gRPC, etc.), you must decide:
+      </p>
+      <ul>
+        <li><strong>How to package the API</strong> so it runs consistently everywhere.</li>
+        <li><strong>How to deploy</strong> new versions safely without downtime.</li>
+      </ul>
+      <p>
+        This note focuses on:
+      </p>
+      <ol>
+        <li><strong>Containerization for APIs</strong> – packaging APIs using Docker containers.</li>
+        <li><strong>Deployment Strategies</strong> – blue-green, rolling, canary, etc., often used with containers / Kubernetes.</li>
+      </ol>
+    </section>
+
+    <!-- CONTAINERIZATION -->
+    <section id="containerization">
+      <span class="tag">Topic</span>
+      <h2>2. Containerization for APIs</h2>
+      <p>
+        <strong>Containerization</strong> means packaging your application code
+        together with its runtime, libraries, and configuration into a
+        <em>container image</em>. The container will run the same way on
+        any machine that has a container engine like Docker.
+      </p>
+      <p>
+        For APIs, containerization solves problems like:
+      </p>
+      <ul>
+        <li>“It works on my machine but not on the server.”</li>
+        <li>Different Python / Node / .NET versions on dev and prod.</li>
+        <li>Manual setup of dependencies during deployment.</li>
+      </ul>
+
+      <h3 id="cont-basics">2.1 Container Basics</h3>
+      <p>Important terms:</p>
+      <ul>
+        <li><strong>Image</strong> – read-only template with app code + OS libraries. Example: <code>myapi:v1</code>.</li>
+        <li><strong>Container</strong> – running instance of an image. Example: <code>myapi</code> running on port 8000.</li>
+        <li><strong>Dockerfile</strong> – script that describes how to build the image.</li>
+        <li><strong>Registry</strong> – storage for images: Docker Hub, Azure Container Registry, ECR, etc.</li>
+      </ul>
+      <div class="diagram">
++---------------------+          +---------------------+
+|   Dockerfile        |  build   |  Image: myapi:v1    |
++---------------------+ -------> +---------------------+
+                                         |
+                                         | run
+                                         v
+                                 +------------------+
+                                 |  Container       |
+                                 |  myapi on 8000   |
+                                 +------------------+
+      </div>
+
+      <div class="note-box">
+        <strong>Key idea:</strong> You build the image once, then run it
+        anywhere (laptop, on-prem server, cloud VM, Kubernetes node).
+      </div>
+
+      <h3 id="dockerfile">2.2 Example: Dockerfile for a Simple REST API (Python FastAPI)</h3>
+      <p>
+        Suppose you have a simple FastAPI service:
+      </p>
+
+      <h4>2.2.1 API Code: <code>app/main.py</code></h4>
+      <div class="code-title">app/main.py</div>
+      <pre>from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+@app.get("/hello")
+def hello(name: str = "World"):
+    return {"message": f"Hello, {name}!"}
+</pre>
+
+      <h4>2.2.2 Requirements file</h4>
+      <div class="code-title">requirements.txt</div>
+      <pre>fastapi
+uvicorn[standard]
+</pre>
+
+      <h4>2.2.3 Dockerfile</h4>
+      <p>
+        Create a file named <code>Dockerfile</code> in the root folder of the API project:
+      </p>
+      <div class="code-title">Dockerfile</div>
+      <pre># 1. Use a small official Python image as base
+FROM python:3.11-slim
+
+# 2. Set working directory inside the container
+WORKDIR /app
+
+# 3. Copy dependency list and install packages
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 4. Copy application code into the image
+COPY app ./app
+
+# 5. Expose the API port (documentation purpose)
+EXPOSE 8000
+
+# 6. Command to start the API using uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+</pre>
+
+      <div class="example-box" id="image-build-run">
+        <h3>2.3 Build &amp; Run the API Container</h3>
+        <p>In the folder containing <code>Dockerfile</code>:</p>
+        <pre># Build the image (tag name: my-fastapi-api)
+docker build -t my-fastapi-api .
+
+# Run the container
+docker run -d --name my-fastapi-container -p 8000:8000 my-fastapi-api
+</pre>
+        <p>
+          Now open <code>http://localhost:8000/docs</code>.<br/>
+          You should see the FastAPI Swagger UI.
+        </p>
+      </div>
+
+      <h3 id="multi-env">2.4 Dev, Test, Prod with Containers</h3>
+      <p>
+        You can use <strong>the same image</strong> for dev, staging, and production,
+        but configure it using environment variables:
+      </p>
+      <ul>
+        <li><code>ENV</code> (development / staging / production)</li>
+        <li>Database connection strings</li>
+        <li>Feature flags</li>
+      </ul>
+
+      <div class="code-title">Example: passing environment variable</div>
+      <pre># Run container with environment variable
+docker run -d -p 8000:8000 \
+  -e ENVIRONMENT=production \
+  --name my-fastapi-prod \
+  my-fastapi-api
+</pre>
+
+      <h3 id="best-practices">2.5 Containerization Best Practices for APIs</h3>
+      <ul>
+        <li><strong>Use a small base image</strong> – <code>python:3.11-slim</code> instead of full Debian.</li>
+        <li><strong>Don’t run as root</strong> – create a non-root user for security (in advanced setups).</li>
+        <li><strong>Expose only necessary ports</strong> – typically 80/443 or 8000 for APIs.</li>
+        <li><strong>Use environment variables</strong> for secrets, URLs, feature toggles.</li>
+        <li><strong>Health endpoint</strong> – provide <code>/health</code> so orchestrators can check readiness.</li>
+        <li><strong>Immutable image</strong> – never change running containers; build a new image for new code.</li>
+      </ul>
+    </section>
+
+    <!-- DEPLOYMENT STRATEGIES -->
+    <section id="deployment">
+      <span class="tag">Topic</span>
+      <h2>3. Deployment Strategies</h2>
+      <p>
+        Once your API is containerized, you must deploy it to users.
+        A <strong>deployment strategy</strong> defines <em>how</em> you roll out a new version
+        (v2) while the old version (v1) may still be serving traffic.
+      </p>
+
+      <h3 id="simple-deploy">3.1 Simple / Single-Node Deployment</h3>
+      <p>
+        The simplest approach:
+      </p>
+      <ol>
+        <li>Stop the old container.</li>
+        <li>Pull the new image.</li>
+        <li>Start a new container.</li>
+      </ol>
+      <div class="diagram">
+Client ---> [ API Container v1 ]
+          (stop)
+Client -X
+          (start)
+Client ---> [ API Container v2 ]
+      </div>
+      <div class="warning-box">
+        <strong>Problem:</strong> There will be downtime between stopping v1 and starting v2.
+        This is ok for internal tools or during maintenance windows, but not for critical APIs.
+      </div>
+
+      <h3 id="strategies">3.2 Advanced Strategies: Blue-Green, Rolling, Canary</h3>
+
+      <h4>3.2.1 Blue-Green Deployment</h4>
+      <p>
+        Two identical environments:
+        <strong>Blue</strong> (current live) and <strong>Green</strong> (new version).
+      </p>
+      <ol>
+        <li>Blue (v1) receives all traffic.</li>
+        <li>Deploy v2 into Green environment.</li>
+        <li>Test Green internally.</li>
+        <li>Switch traffic from Blue to Green (often via load balancer or gateway).</li>
+        <li>Keep Blue as a backup for quick rollback.</li>
+      </ol>
+      <div class="diagram">
+           +-----------+
+Clients -> | Load Bal. | ----> Blue  (v1)
+           +-----------+
+
+Step 2:
+           +-----------+
+Clients -> | Load Bal. | ----> Green (v2)
+           +-----------+
+
+(Blue kept idle / in standby for rollback)
+      </div>
+      <ul>
+        <li><strong>Pros:</strong> Nearly zero downtime; fast rollback.</li>
+        <li><strong>Cons:</strong> Requires double infrastructure; more expensive.</li>
+      </ul>
+
+      <h4>3.2.2 Rolling Deployment</h4>
+      <p>
+        Replace old containers with new ones slowly, node by node or pod by pod.
+      </p>
+      <ol>
+        <li>Cluster has 5 replicas of API v1.</li>
+        <li>Update deployment definition to use image v2.</li>
+        <li>Orchestrator (e.g. Kubernetes) creates a few v2 pods and deletes some v1 pods.</li>
+        <li>Process continues until all are v2.</li>
+      </ol>
+      <div class="diagram">
+Time 0:  [v1][v1][v1][v1][v1]
+
+Time 1:  [v2][v1][v1][v1][v1]
+
+Time 2:  [v2][v2][v1][v1][v1]
+
+Time 3:  [v2][v2][v2][v1][v1]
+
+Time 4:  [v2][v2][v2][v2][v2]
+      </div>
+      <ul>
+        <li><strong>Pros:</strong> No downtime; does not need complete duplicate environment.</li>
+        <li><strong>Cons:</strong> For some time both v1 and v2 run together; rollback is slower.</li>
+      </ul>
+
+      <h4>3.2.3 Canary Deployment</h4>
+      <p>
+        Send only a <strong>small percentage</strong> of real user traffic to the new version first.
+      </p>
+      <ol>
+        <li>Deploy v2 alongside v1.</li>
+        <li>Route 5% of traffic to v2 (canary users), 95% to v1.</li>
+        <li>Monitor errors, latency, business metrics.</li>
+        <li>If stable, gradually increase to 20%, 50%, 100%.</li>
+        <li>If problems, route 0% to v2 and debug.</li>
+      </ol>
+      <div class="diagram">
+Clients
+   |
+   v
++-------------------+
+|  Smart Load Bal.  |
++-------------------+
+   |            |
+ 95% v1      5% v2   (canary)
+
+If OK -> 80% v1 / 20% v2 -> ... -> 0% v1 / 100% v2
+      </div>
+      <ul>
+        <li><strong>Pros:</strong> Very safe; real user testing with controlled risk.</li>
+        <li><strong>Cons:</strong> Requires smart routing (API gateway, service mesh)
+            and good monitoring.</li>
+      </ul>
+
+      <h3 id="k8s-example">3.3 Example: Containerized API in Kubernetes (Rolling Update)</h3>
+      <p>
+        Assume you pushed an image <code>my-fastapi-api:v1</code> to a container registry.
+        A simple Kubernetes deployment could look like:
+      </p>
+
+      <div class="code-title">Deployment YAML (simplified)</div>
+      <pre>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-fastapi-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-fastapi-api
+  template:
+    metadata:
+      labels:
+        app: my-fastapi-api
+    spec:
+      containers:
+      - name: api
+        image: myregistry/my-fastapi-api:v1
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+</pre>
+
+      <p>
+        When you build a new image <code>my-fastapi-api:v2</code> and update the deployment:
+      </p>
+      <pre>kubectl set image deployment/my-fastapi-api \
+  api=myregistry/my-fastapi-api:v2
+</pre>
+      <p>
+        Kubernetes performs a <strong>rolling update</strong> by default:
+        it gradually replaces v1 pods with v2 pods while keeping the service available.
+      </p>
+    </section>
+
+    <!-- SUMMARY -->
+    <section id="summary">
+      <span class="tag">Revision</span>
+      <h2>4. Summary &amp; Interview Tips</h2>
+
+      <h3>4.1 Key Takeaways</h3>
+      <ul>
+        <li>
+          <strong>Containerization for APIs</strong> packages your API and its dependencies into
+          an image, allowing consistent execution across environments.
+        </li>
+        <li>
+          <strong>Dockerfile</strong> describes how to build the image (base image, copy code,
+          install dependencies, set start command).
+        </li>
+        <li>
+          <strong>Deployment strategies</strong> define how you move from one version to another
+          with minimal risk and downtime.
+        </li>
+        <li>
+          <strong>Blue-Green</strong> uses two environments (Blue=live, Green=new) and switches traffic.
+        </li>
+        <li>
+          <strong>Rolling update</strong> gradually replaces old containers with new ones.
+        </li>
+        <li>
+          <strong>Canary deployment</strong> sends a small percentage of traffic to new version first.
+        </li>
+      </ul>
+
+      <h3>4.2 Typical Interview / Viva Questions</h3>
+      <ul>
+        <li>What problem does containerization solve for APIs?</li>
+        <li>Explain the difference between a Docker image and a container.</li>
+        <li>Walk through a Dockerfile for your API project.</li>
+        <li>What is the difference between Blue-Green and Rolling deployment?</li>
+        <li>How does Canary deployment reduce risk?</li>
+        <li>How would you perform zero-downtime deployment for an API?</li>
+      </ul>
+
+      <div class="note-box">
+        You can extend these notes by adding your own project examples:
+        <ul>
+          <li>Containerize a .NET Web API or Node.js Express API.</li>
+          <li>Try blue-green deployment using two different Kubernetes services.</li>
+          <li>Implement canary routing using an API gateway or service mesh (e.g., Istio).</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+</body>
+</html>
