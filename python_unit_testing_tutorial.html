@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Python Unit Testing Tutorial - W3Schools Style</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background-color: #f1f1f1;
+    }
+    .topnav {
+        overflow: hidden;
+        background-color: #04AA6D;
+        color: #fff;
+        padding: 14px 16px;
+    }
+    .topnav h1 {
+        margin: 0;
+        font-size: 24px;
+    }
+    .topnav small {
+        font-size: 12px;
+        opacity: 0.9;
+    }
+    .row {
+        display: flex;
+        min-height: calc(100vh - 52px);
+    }
+    .sidenav {
+        min-width: 220px;
+        max-width: 260px;
+        background-color: #ffffff;
+        padding: 16px;
+        border-right: 1px solid #ddd;
+    }
+    .sidenav h3 {
+        margin-top: 0;
+        color: #333;
+    }
+    .sidenav a {
+        display: block;
+        padding: 6px 4px;
+        text-decoration: none;
+        color: #000;
+        font-size: 14px;
+        border-radius: 4px;
+    }
+    .sidenav a:hover {
+        background-color: #f1f1f1;
+        color: #000;
+    }
+    .sidenav a.active {
+        background-color: #04AA6D;
+        color: white;
+    }
+    .content {
+        flex: 1;
+        padding: 24px;
+        background-color: #f9f9f9;
+    }
+    h2 {
+        color: #04AA6D;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 6px;
+    }
+    h3 {
+        color: #333;
+        margin-top: 24px;
+    }
+    p {
+        line-height: 1.6;
+    }
+    .example-box {
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-left: 4px solid #04AA6D;
+        padding: 12px 16px;
+        margin: 16px 0;
+        border-radius: 4px;
+    }
+    .example-box h4 {
+        margin-top: 0;
+    }
+    pre {
+        background-color: #282c34;
+        color: #f8f8f2;
+        padding: 12px;
+        overflow-x: auto;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+    code {
+        font-family: "Consolas", "Courier New", monospace;
+    }
+    .note {
+        background-color: #ffffcc;
+        border-left: 6px solid #ffeb3b;
+        padding: 10px 16px;
+        margin: 16px 0;
+        border-radius: 4px;
+    }
+    .tip {
+        background-color: #e7f5ff;
+        border-left: 6px solid #2196F3;
+        padding: 10px 16px;
+        margin: 16px 0;
+        border-radius: 4px;
+    }
+    .warning {
+        background-color: #ffebee;
+        border-left: 6px solid #f44336;
+        padding: 10px 16px;
+        margin: 16px 0;
+        border-radius: 4px;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 16px 0;
+        background-color: #fff;
+    }
+    th, td {
+        text-align: left;
+        padding: 8px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    @media screen and (max-width: 768px) {
+        .row {
+            flex-direction: column;
+        }
+        .sidenav {
+            width: 100%;
+            max-width: none;
+            border-right: none;
+            border-bottom: 1px solid #ddd;
+        }
+    }
+    .small {
+        font-size: 13px;
+        color: #555;
+    }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+    <h1>Python Unit Testing Tutorial <small>- W3Schools Style</small></h1>
+</div>
+
+<div class="row">
+    <div class="sidenav">
+        <h3>Unit Testing Menu</h3>
+        <a href="#intro" class="active">Introduction</a>
+        <a href="#why">Why Unit Testing?</a>
+        <a href="#first-test">First Test Example</a>
+        <a href="#unittest">Unit Testing with unittest</a>
+        <a href="#unittest-assert">unittest Assert Methods</a>
+        <a href="#unittest-lifecycle">setUp / tearDown</a>
+        <a href="#pytest">Unit Testing with pytest</a>
+        <a href="#pytest-fixtures">pytest Fixtures</a>
+        <a href="#pytest-param">pytest Parametrization</a>
+        <a href="#pytest-marks">pytest Marks &amp; CLI Options</a>
+        <a href="#mocking">Mocking with unittest.mock</a>
+        <a href="#coverage">Test Coverage</a>
+        <a href="#best-practices">Best Practices</a>
+        <a href="#faq">FAQ</a>
+    </div>
+
+    <div class="content">
+
+        <section id="intro">
+            <h2>Python Unit Testing - Introduction</h2>
+            <p>
+                <strong>Unit testing</strong> means testing small, isolated pieces of code (usually functions or methods)
+                to make sure they behave as expected. In Python, we commonly use:
+            </p>
+            <ul>
+                <li><code>unittest</code> (built-in module)</li>
+                <li><code>pytest</code> (popular third-party framework)</li>
+                <li><code>unittest.mock</code> for mocking and patching dependencies</li>
+            </ul>
+
+            <div class="note">
+                <strong>Note:</strong> Unit tests help you catch bugs early, refactor safely, and act as executable documentation
+                for your code.
+            </div>
+        </section>
+
+        <section id="why">
+            <h2>Why Unit Testing?</h2>
+            <p>Key reasons to use unit tests:</p>
+            <ul>
+                <li><strong>Catch bugs early</strong> before they reach production.</li>
+                <li><strong>Refactor confidently</strong> &mdash; tests tell you if something broke.</li>
+                <li><strong>Documentation</strong> &mdash; tests show how functions are supposed to behave.</li>
+                <li><strong>Faster feedback</strong> &mdash; compared to manual testing.</li>
+            </ul>
+
+            <div class="tip">
+                <strong>Tip:</strong> Start by writing tests for critical business logic (e.g., pricing, discounts, data transformations),
+                then expand to more areas.
+            </div>
+        </section>
+
+        <section id="first-test">
+            <h2>Your First Python Unit Test</h2>
+
+            <h3>Step 1 &mdash; Create a Simple Module</h3>
+            <div class="example-box">
+                <h4>Example: <code>calculator.py</code></h4>
+                <pre><code class="language-python"># calculator.py
+
+def add(a, b):
+    return a + b
+
+def is_even(n: int) -&gt; bool:
+    return n % 2 == 0
+</code></pre>
+            </div>
+
+            <h3>Step 2 &mdash; Create a Test File</h3>
+            <p>
+                For <code>unittest</code>, it is common to name the test file like <code>test_calculator_unittest.py</code>.
+            </p>
+            <div class="example-box">
+                <h4>Example: <code>test_calculator_unittest.py</code></h4>
+                <pre><code class="language-python"># test_calculator_unittest.py
+
+import unittest
+import calculator
+
+class TestCalculator(unittest.TestCase):
+
+    def test_add_two_numbers(self):
+        result = calculator.add(2, 3)
+        self.assertEqual(result, 5)
+
+    def test_is_even_true(self):
+        self.assertTrue(calculator.is_even(4))
+
+    def test_is_even_false(self):
+        self.assertFalse(calculator.is_even(5))
+
+if __name__ == "__main__":
+    unittest.main()
+</code></pre>
+            </div>
+
+            <h3>Step 3 &mdash; Run the Tests</h3>
+            <p>In the terminal, run:</p>
+            <pre><code class="language-bash">python -m unittest test_calculator_unittest.py</code></pre>
+
+            <p>Or run all tests automatically discovered in the current folder:</p>
+            <pre><code class="language-bash">python -m unittest discover</code></pre>
+        </section>
+
+        <section id="unittest">
+            <h2>Unit Testing with <code>unittest</code> (Built-in)</h2>
+            <p>
+                The <code>unittest</code> module is Python's built-in testing framework, inspired by JUnit (Java).
+                You create test classes by subclassing <code>unittest.TestCase</code> and write methods that start with <code>test_</code>.
+            </p>
+
+            <h3>Basic Structure</h3>
+            <div class="example-box">
+                <h4>Example: Basic <code>unittest</code> TestCase</h4>
+                <pre><code class="language-python">import unittest
+from calculator import add
+
+class TestAddFunction(unittest.TestCase):
+
+    def test_add_positive_numbers(self):
+        self.assertEqual(add(10, 5), 15)
+
+    def test_add_negative_numbers(self):
+        self.assertEqual(add(-3, -4), -7)
+
+if __name__ == "__main__":
+    unittest.main()
+</code></pre>
+            </div>
+
+            <div class="note">
+                <strong>Naming convention:</strong> Test method names must start with <code>test_</code> for automatic discovery.
+            </div>
+        </section>
+
+        <section id="unittest-assert">
+            <h2>Common <code>unittest</code> Assert Methods</h2>
+            <p>Some commonly used assertion methods from <code>unittest.TestCase</code>:</p>
+
+            <table>
+                <tr>
+                    <th>Method</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td><code>assertEqual(a, b)</code></td>
+                    <td>Check that <code>a == b</code></td>
+                    <td><code>self.assertEqual(add(2, 3), 5)</code></td>
+                </tr>
+                <tr>
+                    <td><code>assertNotEqual(a, b)</code></td>
+                    <td>Check that <code>a != b</code></td>
+                    <td><code>self.assertNotEqual(add(2, 2), 5)</code></td>
+                </tr>
+                <tr>
+                    <td><code>assertTrue(x)</code></td>
+                    <td>Check that <code>bool(x) is True</code></td>
+                    <td><code>self.assertTrue(is_even(4))</code></td>
+                </tr>
+                <tr>
+                    <td><code>assertFalse(x)</code></td>
+                    <td>Check that <code>bool(x) is False</code></td>
+                    <td><code>self.assertFalse(is_even(5))</code></td>
+                </tr>
+                <tr>
+                    <td><code>assertIs(a, b)</code></td>
+                    <td>Check that <code>a is b</code></td>
+                    <td><code>self.assertIs(obj1, obj2)</code></td>
+                </tr>
+                <tr>
+                    <td><code>assertIsNone(x)</code></td>
+                    <td>Check that <code>x is None</code></td>
+                    <td><code>self.assertIsNone(result)</code></td>
+                </tr>
+                <tr>
+                    <td><code>assertIn(a, b)</code></td>
+                    <td>Check that <code>a in b</code></td>
+                    <td><code>self.assertIn("a", "cat")</code></td>
+                </tr>
+                <tr>
+                    <td><code>assertRaises(exc, func, *args)</code></td>
+                    <td>Check that a function raises an exception</td>
+                    <td><code>self.assertRaises(ValueError, divide, 1, 0)</code></td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="unittest-lifecycle">
+            <h2><code>setUp()</code> and <code>tearDown()</code> in <code>unittest</code></h2>
+            <p>
+                Use <code>setUp()</code> to create objects before each test, and <code>tearDown()</code> to clean up.
+            </p>
+
+            <div class="example-box">
+                <h4>Example: Using <code>setUp</code> and <code>tearDown</code></h4>
+                <pre><code class="language-python">import unittest
+
+class ShoppingCart:
+    def __init__(self):
+        self.items = []
+
+    def add_item(self, name, price):
+        self.items.append({"name": name, "price": price})
+
+    def total(self):
+        return sum(item["price"] for item in self.items)
+
+    def clear(self):
+        self.items.clear()
+
+class TestShoppingCart(unittest.TestCase):
+
+    def setUp(self):
+        # Runs before each test
+        self.cart = ShoppingCart()
+
+    def tearDown(self):
+        # Runs after each test
+        self.cart.clear()
+
+    def test_cart_starts_empty(self):
+        self.assertEqual(self.cart.total(), 0)
+
+    def test_add_single_item(self):
+        self.cart.add_item("Book", 299.0)
+        self.assertEqual(self.cart.total(), 299.0)
+
+if __name__ == "__main__":
+    unittest.main()
+</code></pre>
+            </div>
+        </section>
+
+        <section id="pytest">
+            <h2>Unit Testing with <code>pytest</code></h2>
+            <p>
+                <strong>pytest</strong> is a powerful, simple-to-use testing framework for Python. Many developers prefer it
+                because tests are short and easy to read.
+            </p>
+
+            <h3>Install pytest</h3>
+            <pre><code class="language-bash">pip install pytest</code></pre>
+
+            <h3>Basic Rules</h3>
+            <ul>
+                <li>Test files must be named <code>test_*.py</code> or <code>*_test.py</code>.</li>
+                <li>Test functions must be named <code>test_*</code>.</li>
+                <li>Use plain <code>assert</code> statements instead of <code>self.assert*</code>.</li>
+            </ul>
+
+            <div class="example-box">
+                <h4>Example: <code>test_calculator_pytest.py</code></h4>
+                <pre><code class="language-python"># test_calculator_pytest.py
+
+from calculator import add, is_even
+
+def test_add_positive_numbers():
+    assert add(2, 3) == 5
+
+def test_add_negative_numbers():
+    assert add(-3, -4) == -7
+
+def test_is_even_true():
+    assert is_even(4) is True
+
+def test_is_even_false():
+    assert is_even(5) is False
+</code></pre>
+            </div>
+
+            <h3>Running pytest</h3>
+            <pre><code class="language-bash">pytest</code></pre>
+            <pre><code class="language-bash">pytest -v   # verbose output</code></pre>
+        </section>
+
+        <section id="pytest-fixtures">
+            <h2>pytest Fixtures</h2>
+            <p>
+                Fixtures in pytest are reusable pieces of setup/teardown logic, defined using the <code>@pytest.fixture</code> decorator.
+            </p>
+
+            <div class="example-box">
+                <h4>Example: Fixture for <code>ShoppingCart</code></h4>
+                <pre><code class="language-python"># test_cart_pytest.py
+
+import pytest
+from calculator import add  # just for example, reuse your modules
+
+class ShoppingCart:
+    def __init__(self):
+        self.items = []
+
+    def add_item(self, name, price):
+        self.items.append({"name": name, "price": price})
+
+    def total(self):
+        return sum(item["price"] for item in self.items)
+
+    def clear(self):
+        self.items.clear()
+
+@pytest.fixture
+def empty_cart():
+    cart = ShoppingCart()
+    # setup
+    yield cart
+    # teardown
+    cart.clear()
+
+def test_cart_starts_empty(empty_cart):
+    assert empty_cart.total() == 0
+
+def test_add_item(empty_cart):
+    empty_cart.add_item("Pen", 20.0)
+    assert empty_cart.total() == 20.0
+</code></pre>
+            </div>
+        </section>
+
+        <section id="pytest-param">
+            <h2>pytest Parametrization</h2>
+            <p>
+                Use <code>@pytest.mark.parametrize</code> to run the same test with different input values.
+            </p>
+
+            <div class="example-box">
+                <h4>Example: Testing Many Inputs</h4>
+                <pre><code class="language-python"># test_parametrize.py
+
+import pytest
+from calculator import add, is_even
+
+@pytest.mark.parametrize(
+    "a, b, expected",
+    [
+        (1, 2, 3),
+        (-1, 1, 0),
+        (10, 20, 30),
+    ]
+)
+def test_add_various_cases(a, b, expected):
+    assert add(a, b) == expected
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        (0, True),
+        (2, True),
+        (3, False),
+        (99, False),
+    ]
+)
+def test_is_even_various_cases(value, expected):
+    assert is_even(value) is expected
+</code></pre>
+            </div>
+        </section>
+
+        <section id="pytest-marks">
+            <h2>pytest Marks &amp; Useful CLI Options</h2>
+
+            <h3>Marks</h3>
+            <p>Marks allow you to categorize or control tests.</p>
+
+            <div class="example-box">
+                <h4>Example: <code>@pytest.mark.skip</code>, <code>@pytest.mark.xfail</code>, Custom Marks</h4>
+                <pre><code class="language-python"># test_marks.py
+
+import pytest
+import sys
+
+@pytest.mark.skip(reason="Not implemented yet")
+def test_future_feature():
+    assert False  # will never run
+
+@pytest.mark.xfail(reason="Known bug")
+def test_known_bug():
+    assert 1 == 2  # marked as expected fail
+
+@pytest.mark.slow
+def test_slow_operation():
+    total = 0
+    for i in range(1000000):
+        total += i
+    assert total &gt; 0
+
+@pytest.mark.skipif(sys.platform.startswith("win"),
+                    reason="Does not run on Windows")
+def test_not_on_windows():
+    assert True
+</code></pre>
+            </div>
+
+            <h3>Common pytest Command-Line Options</h3>
+            <table>
+                <tr>
+                    <th>Option</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td><code>-v</code></td>
+                    <td>Verbose output</td>
+                    <td><code>pytest -v</code></td>
+                </tr>
+                <tr>
+                    <td><code>-q</code></td>
+                    <td>Quiet mode</td>
+                    <td><code>pytest -q</code></td>
+                </tr>
+                <tr>
+                    <td><code>-k</code></td>
+                    <td>Run tests matching expression</td>
+                    <td><code>pytest -k "add and not negative"</code></td>
+                </tr>
+                <tr>
+                    <td><code>-m</code></td>
+                    <td>Run tests with given mark</td>
+                    <td><code>pytest -m slow</code></td>
+                </tr>
+                <tr>
+                    <td><code>--maxfail=1</code></td>
+                    <td>Stop after first failure</td>
+                    <td><code>pytest --maxfail=1</code></td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="mocking">
+            <h2>Mocking with <code>unittest.mock</code></h2>
+            <p>
+                Sometimes, you want to test code that calls external APIs, reads files, or accesses databases. You do not
+                want your tests to actually call those resources. Instead, you can <strong>mock</strong> them.
+            </p>
+
+            <h3>Example Scenario</h3>
+            <p>We have a function that fetches JSON from a URL using <code>requests.get</code>:</p>
+
+            <div class="example-box">
+                <h4>Example: <code>weather.py</code></h4>
+                <pre><code class="language-python"># weather.py
+
+import requests
+
+def get_temperature(city: str) -&gt; float:
+    url = f"https://api.example.com/weather?city={city}"
+    response = requests.get(url, timeout=5)
+    data = response.json()
+    return data["temperature"]
+</code></pre>
+            </div>
+
+            <p>We do not want to actually call the API in tests. Use <code>unittest.mock</code>:</p>
+
+            <div class="example-box">
+                <h4>Example: Mocking <code>requests.get</code></h4>
+                <pre><code class="language-python"># test_weather_unittest.py
+
+import unittest
+from unittest.mock import patch, MagicMock
+from weather import get_temperature
+
+class TestWeather(unittest.TestCase):
+
+    @patch("weather.requests.get")
+    def test_get_temperature(self, mock_get):
+        # Configure the mock response
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"temperature": 30.5}
+        mock_get.return_value = mock_response
+
+        temp = get_temperature("Jaipur")
+        self.assertEqual(temp, 30.5)
+
+        # Assert that requests.get was called with expected URL
+        mock_get.assert_called_once()
+        args, kwargs = mock_get.call_args
+        self.assertIn("Jaipur", args[0])
+
+if __name__ == "__main__":
+    unittest.main()
+</code></pre>
+            </div>
+
+            <div class="tip">
+                <strong>Tip:</strong> Use mocking for external systems (APIs, databases, queues, files, etc.). Keep your unit tests fast and deterministic.
+            </div>
+        </section>
+
+        <section id="coverage">
+            <h2>Test Coverage</h2>
+            <p>
+                <strong>Coverage</strong> tells you how much of your code is executed by your tests.
+                A common tool is <code>coverage.py</code>.
+            </p>
+
+            <h3>Install coverage</h3>
+            <pre><code class="language-bash">pip install coverage</code></pre>
+
+            <h3>Run Tests with Coverage</h3>
+            <pre><code class="language-bash">coverage run -m pytest</code></pre>
+
+            <p>Generate a coverage report:</p>
+            <pre><code class="language-bash">coverage report</code></pre>
+
+            <p>Generate an HTML report:</p>
+            <pre><code class="language-bash">coverage html</code></pre>
+
+            <div class="note">
+                <strong>Note:</strong> Coverage 100% does not guarantee bug-free code, but low coverage is a strong signal that many paths are untested.
+            </div>
+        </section>
+
+        <section id="best-practices">
+            <h2>Best Practices for Python Unit Testing</h2>
+            <ul>
+                <li><strong>Test one thing per test</strong> &mdash; keep tests small and focused.</li>
+                <li><strong>Name tests clearly</strong> &mdash; describe what they verify (e.g. <code>test_add_negative_numbers</code>).</li>
+                <li><strong>Avoid logic in tests</strong> &mdash; tests should be simple and easy to understand.</li>
+                <li><strong>Use fixtures / setUp</strong> to avoid duplication of setup code.</li>
+                <li><strong>Mock external dependencies</strong>; do not rely on real APIs or databases.</li>
+                <li><strong>Run tests often</strong> &mdash; integrate into your CI/CD pipeline.</li>
+            </ul>
+        </section>
+
+        <section id="faq">
+            <h2>FAQ: Python Unit Testing</h2>
+
+            <h3>1. Which framework should I use: unittest or pytest?</h3>
+            <p>
+                Use <strong>unittest</strong> if you want to stick with the standard library. Use <strong>pytest</strong> if you want
+                a more concise and powerful framework with plugins and advanced features.
+            </p>
+
+            <h3>2. Where should I put my tests?</h3>
+            <p>
+                Common patterns:
+            </p>
+            <ul>
+                <li><code>tests/</code> folder at the project root.</li>
+                <li>Mirror your package structure (e.g. <code>myapp/models.py</code> &rarr; <code>tests/test_models.py</code>).</li>
+            </ul>
+
+            <h3>3. How many tests do I need?</h3>
+            <p>
+                There is no magic number. Aim for good coverage on critical business logic. Over time, your suite
+                will grow naturally as you fix bugs and add features.
+            </p>
+
+            <h3>4. Can I mix unittest and pytest?</h3>
+            <p>
+                Yes. pytest can run old <code>unittest</code> style test cases. Many projects gradually migrate from
+                <code>unittest</code> to pure pytest style.
+            </p>
+
+            <div class="tip">
+                <strong>Next Step:</strong> Try converting one of your real project modules (e.g., billing, ETL, or API
+                layer) into testable functions and write both <code>unittest</code> and <code>pytest</code> tests for them.
+            </div>
+        </section>
+
+        <hr>
+        <p class="small">
+            Save this file as <strong>python_unit_testing_tutorial.html</strong> and open it in your browser to view the W3Schools-style tutorial.
+        </p>
+
+    </div>
+</div>
+
+</body>
+</html>
